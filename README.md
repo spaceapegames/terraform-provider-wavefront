@@ -6,11 +6,12 @@ A Terraform Provider to manage resources in Wavefront. Currently supports Alerts
 
 Go
 Terraform 0.10.0 or higher (Custom providers were released at 0.10.0)
-dep for dependency management
+govendor for dependency management
 
 ## Building and Testing
 
 ### Build the plugin.
+
 `go build -o terraform-provider-wavefront`
 
  This will create the plugin binary ./terraform-provider-wavefront.

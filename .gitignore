@@ -1,4 +1,3 @@
 .terraform/
 terraform.tfstate*
 terraform-provider-wavefront
-vendor/
