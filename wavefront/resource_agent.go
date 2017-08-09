@@ -1,10 +1,10 @@
 package wavefront
 
 import (
+	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/spaceapegames/go-wavefront"
 	"log"
-	"fmt"
 )
 
 func resourceAgent() *schema.Resource {
@@ -51,7 +51,6 @@ func resourceAgent() *schema.Resource {
 		},
 	}
 }
-
 
 func resourceServerCreate(d *schema.ResourceData, m interface{}) error {
 	//configure a client
@@ -167,15 +166,14 @@ func resourceServerUpdate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	a := results[0]
-	a.Name                 = d.Get("name").(string)
-	a.Target               = d.Get("target").(string)
-	a.Condition            = d.Get("condition").(string)
-	a.DisplayExpression    = d.Get("display_expression").(string)
-	a.Minutes              = d.Get("minutes").(int)
-	a.ResolveAfterMinutes  = d .Get("resolve_after_minutes").(int)
-	a.Severity             = d.Get("severity").(string)
-	a.Tags                 = tags
-
+	a.Name = d.Get("name").(string)
+	a.Target = d.Get("target").(string)
+	a.Condition = d.Get("condition").(string)
+	a.DisplayExpression = d.Get("display_expression").(string)
+	a.Minutes = d.Get("minutes").(int)
+	a.ResolveAfterMinutes = d.Get("resolve_after_minutes").(int)
+	a.Severity = d.Get("severity").(string)
+	a.Tags = tags
 
 	// Update the alert on Wavefront
 	err = alerts.Update(a)
