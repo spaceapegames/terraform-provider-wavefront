@@ -18,7 +18,7 @@ govendor for dependency management
  The naming is important, terraform looks up providers using terraform-provider-<name>
 
 ### Unit Test
-`go test` (When there are some)
+`make test` (When there are some)
 
 ### Integration Tests
 
