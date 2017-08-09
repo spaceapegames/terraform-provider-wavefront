@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/spaceapegames/terraform-provider-wavefront.svg?token=bQMpYkjkzKf94BWWKiAA&branch=master)](https://travis-ci.com/spaceapegames/terraform-provider-wavefront)
+
 # Wavefront Terraform Provider
 
 A Terraform Provider to manage resources in Wavefront. Currently supports Alerts, the hope is to support Dashboards in the future.
