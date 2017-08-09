@@ -12,7 +12,7 @@ govendor for dependency management
 
 ### Build the plugin.
 
-`go build -o terraform-provider-wavefront`
+`make build`
 
  This will create the plugin binary ./terraform-provider-wavefront.
  The naming is important, terraform looks up providers using terraform-provider-<name>
