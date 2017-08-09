@@ -63,7 +63,7 @@ func resourceServerCreate(d *schema.ResourceData, m interface{}) error {
 		log.Fatal(err)
 	}
 	if err != nil {
-		return fmt.Errorf("Failed to configure Wavefront Client", err)
+		return fmt.Errorf("Failed to configure Wavefront Client %s", err)
 	}
 	alerts := client.Alerts()
 
@@ -86,7 +86,7 @@ func resourceServerCreate(d *schema.ResourceData, m interface{}) error {
 	// Create the alert on Wavefront
 	err = alerts.Create(a)
 	if err != nil {
-		return fmt.Errorf("Error Creating Alert", d.Get("name"), err)
+		return fmt.Errorf("Error Creating Alert %s. %s", d.Get("name"), err)
 	}
 
 	d.SetId(*a.ID)
@@ -106,7 +106,7 @@ func resourceServerRead(d *schema.ResourceData, m interface{}) error {
 		log.Fatal(err)
 	}
 	if err != nil {
-		return fmt.Errorf("Failed to configure Wavefront Client", err)
+		return fmt.Errorf("Failed to configure Wavefront Client %s", err)
 	}
 	alerts := client.Alerts()
 
@@ -120,7 +120,7 @@ func resourceServerRead(d *schema.ResourceData, m interface{}) error {
 			},
 		})
 	if err != nil {
-		return fmt.Errorf("Error finding Wavefront Alert", d.Id(), err)
+		return fmt.Errorf("Error finding Wavefront Alert %s. %s", d.Id(), err)
 	}
 	// resource has been deleted out of band. So unset ID
 	if len(results) != 1 {
@@ -144,7 +144,7 @@ func resourceServerUpdate(d *schema.ResourceData, m interface{}) error {
 		log.Fatal(err)
 	}
 	if err != nil {
-		return fmt.Errorf("Failed to configure Wavefront Client", err)
+		return fmt.Errorf("Failed to configure Wavefront Client %s", err)
 	}
 	alerts := client.Alerts()
 
@@ -157,7 +157,7 @@ func resourceServerUpdate(d *schema.ResourceData, m interface{}) error {
 			},
 		})
 	if err != nil {
-		return fmt.Errorf("Error finding Wavefront Alert", d.Id(), err)
+		return fmt.Errorf("Error finding Wavefront Alert %s. %s", d.Id(), err)
 	}
 
 	var tags []string
@@ -178,7 +178,7 @@ func resourceServerUpdate(d *schema.ResourceData, m interface{}) error {
 	// Update the alert on Wavefront
 	err = alerts.Update(a)
 	if err != nil {
-		return fmt.Errorf("Error Updating Alert", d.Get("name"), err)
+		return fmt.Errorf("Error Updating Alert %s. %s", d.Get("name"), err)
 	}
 	return nil
 }
@@ -194,7 +194,7 @@ func resourceServerDelete(d *schema.ResourceData, m interface{}) error {
 		log.Fatal(err)
 	}
 	if err != nil {
-		return fmt.Errorf("Failed to configure Wavefront Client", err)
+		return fmt.Errorf("Failed to configure Wavefront Client %s", err)
 	}
 	alerts := client.Alerts()
 
@@ -207,14 +207,14 @@ func resourceServerDelete(d *schema.ResourceData, m interface{}) error {
 			},
 		})
 	if err != nil {
-		return fmt.Errorf("Error finding Wavefront Alert", d.Id(), err)
+		return fmt.Errorf("Error finding Wavefront Alert %s. %s", d.Id(), err)
 	}
 	a := results[0]
 
 	// Delete the Alert
 	err = alerts.Delete(a)
 	if err != nil {
-		return fmt.Errorf("Failed to delete Alert", d.Id(), err)
+		return fmt.Errorf("Failed to delete Alert %s. %s", d.Id(), err)
 	}
 	d.SetId("")
 	return nil
