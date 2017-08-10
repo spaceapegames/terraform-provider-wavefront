@@ -1,7 +1,8 @@
-package wavefront
+package wavefront_plugin
 
 import (
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/terraform"
 )
 
 type wavefrontConfig struct {
@@ -9,12 +10,13 @@ type wavefrontConfig struct {
 	token   string
 }
 
-func Provider() *schema.Provider {
+func Provider() terraform.ResourceProvider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"address": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				DefaultFunc: schema.EnvDefaultFunc("WAVEFRONT_ADDRESS", ""),
 			},
 			"token": &schema.Schema{
 				Type:        schema.TypeString,
@@ -23,7 +25,7 @@ func Provider() *schema.Provider {
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			"wavefront_alert": resourceAgent(),
+			"wavefront_alert": resourceAlert(),
 		},
 		ConfigureFunc: providerConfigure,
 	}

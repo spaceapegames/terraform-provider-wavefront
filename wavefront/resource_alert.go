@@ -1,4 +1,4 @@
-package wavefront
+package wavefront_plugin
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 	"log"
 )
 
-func resourceAgent() *schema.Resource {
+func resourceAlert() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceServerCreate,
 		Read:   resourceServerRead,
@@ -59,9 +59,6 @@ func resourceServerCreate(d *schema.ResourceData, m interface{}) error {
 		Address: m.(*wavefrontConfig).address,
 	}
 	client, err := wavefront.NewClient(config)
-	if err != nil {
-		log.Fatal(err)
-	}
 	if err != nil {
 		return fmt.Errorf("Failed to configure Wavefront Client %s", err)
 	}
