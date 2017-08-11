@@ -22,6 +22,17 @@ govendor for dependency management
 ### Unit Test
 `make test`
 
+### Acceptance Tests
+Acceptance tests are run against the Wavefront API so you'll need an account to use. Run at your own risk.
+
+To run acceptance tests you must set the `TF_ACC` environment variable
+`export TF_ACC=true`
+
+You also need to supply the `WAVEFRONT_TOKEN` and `WAVEFRONT_ADDRESS` environment variables
+
+To run the tests run
+`make acceptance`
+
 ### Integration Tests
 
 Use the main.tf to create some test config, such as
