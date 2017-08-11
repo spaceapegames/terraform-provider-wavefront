@@ -33,7 +33,7 @@ You also need to supply the `WAVEFRONT_TOKEN` and `WAVEFRONT_ADDRESS` environmen
 To run the tests run
 `make acceptance`
 
-### Integration Tests
+### Running the Plugin
 
 Use the main.tf to create some test config, such as
 
