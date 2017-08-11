@@ -12,6 +12,9 @@ func resourceAlert() *schema.Resource {
 		Read:   resourceServerRead,
 		Update: resourceServerUpdate,
 		Delete: resourceServerDelete,
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 
 		Schema: map[string]*schema.Schema{
 			"name": &schema.Schema{
@@ -84,10 +87,10 @@ func resourceServerCreate(d *schema.ResourceData, m interface{}) error {
 func resourceServerRead(d *schema.ResourceData, m interface{}) error {
 	alerts := m.(*wavefrontClient).client.Alerts()
 
-	// search for an alert with out id. We should recieve 1 (Exact Match) or 0 (No Match)
+	// search for an alert with our id. We should recieve 1 (Exact Match) or 0 (No Match)
 	results, err := alerts.Find(
 		[]*wavefront.SearchCondition{
-			&wavefront.SearchCondition{
+			{
 				Key:            "id",
 				Value:          d.Id(),
 				MatchingMethod: "EXACT",
@@ -104,6 +107,15 @@ func resourceServerRead(d *schema.ResourceData, m interface{}) error {
 
 	// Use the Wavefront ID as the Terraform ID
 	d.SetId(*results[0].ID)
+	d.Set("name", results[0].Name)
+	d.Set("target", results[0].Target)
+	d.Set("condition", results[0].Condition)
+	d.Set("display_expression", results[0].DisplayExpression)
+	d.Set("minutes", results[0].Minutes)
+	d.Set("resolve_after_minutes", results[0].ResolveAfterMinutes)
+	d.Set("severity", results[0].Severity)
+	d.Set("tags", results[0].Tags)
+
 	return nil
 }
 
@@ -112,7 +124,7 @@ func resourceServerUpdate(d *schema.ResourceData, m interface{}) error {
 
 	results, err := alerts.Find(
 		[]*wavefront.SearchCondition{
-			&wavefront.SearchCondition{
+			{
 				Key:            "id",
 				Value:          d.Id(),
 				MatchingMethod: "EXACT",

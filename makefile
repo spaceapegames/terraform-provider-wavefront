@@ -35,4 +35,4 @@ test: fmtcheck
 acceptance: fmtcheck
 	go test -v -i $(TEST) || exit 1
 	echo $(TEST) | \
-		xargs -t -n4 go test -v $(TESTARGS) -timeout=30s -parallel=4
+		TF_ACC=true xargs -t -n4 go test -v $(TESTARGS) -timeout=30s -parallel=4
