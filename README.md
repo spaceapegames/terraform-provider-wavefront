@@ -2,15 +2,15 @@
 
 # Wavefront Terraform Provider
 
-A Terraform Provider to manage resources in Wavefront. Currently supports Alerts, the hope is to support Dashboards in the future.
+A Terraform Provider to manage resources in Wavefront. Currently supports Alerts, the hope is to support Dashboards and more in the future.
 
 ## Requirements
-
-Go
-Terraform 0.10.0 or higher (Custom providers were released at 0.10.0)
-govendor for dependency management
+* Go version 1.8 or higher
+* Terraform 0.10.0 or higher (Custom providers were released at 0.10.0)
+* dep for dependency management
 
 ## Known Issues
+
 There is an issue with the wavefront API when applying tagged alerts that it will cause a race condition. They are working on fixing this.
 
 To ensure that applies of more than one Alert are successful you can use  the `-parallelism` flag to prevent parallel resource creations
@@ -22,8 +22,7 @@ To ensure that applies of more than one Alert are successful you can use  the `-
 
 `make build`
 
- This will create the plugin binary ./terraform-provider-wavefront.
- The naming is important, terraform looks up providers using terraform-provider-<name>
+This will create the plugin binary ./terraform-provider-wavefront
 
 ### Unit Test
 `make test`
@@ -40,7 +39,7 @@ To run the tests run
 
 Use the main.tf to create some test config, such as
 
- ```
+```
  provider "wavefront" {
    address = "spaceape.wavefront.com"
  }
@@ -58,77 +57,21 @@ Use the main.tf to create some test config, such as
      "flamingo"
    ]
  }
- ```
+```
 
- export your wavefront token `export WAVEFRONT_TOKEN=<token>` You could also configure the `token` in the provider section of main.tf, but best not to.
+Export your wavefront token `export WAVEFRONT_TOKEN=<token>` You could also configure the `token` in the provider section of main.tf, but best not to.
 
- Run `terraform init` to load your provider.
+Run `terraform init` to load your provider.
 
- Run `terraform plan` to show the plan.
+Run `terraform plan` to show the plan.
 
- Run `terraform apply` to apply the test configuration and then check the results in Wavefront.
+Run `terraform apply` to apply the test configuration and then check the results in Wavefront.
 
- Update main.tf to change a value, the run plan and apply again to check that updates work.
+Update main.tf to change a value, the run plan and apply again to check that updates work.
 
- Run `terraform destroy` to test deleting resources.
+Run `terraform destroy` to test deleting resources.
 
 ## Contributing
 
 * [This is a good blog post to get started](https://www.terraform.io/guides/writing-custom-terraform-providers.html?)
 * [Some example Providers](https://github.com/terraform-providers)
-
-### Creating a new Resource
-
-Create a new file `resource_<resource_type>.go`.
-
-```
-package main
-
-// import the terraform helper schema
-import (
-    "github.com/hashicorp/terraform/helper/schema"
-)
-
-func resourceServer() *schema.Resource {
-    return &schema.Resource{
-
-        // Register the CRUD operations
-
-        Create: resourceServerCreate,
-        Read:   resourceServerRead,
-        Update: resourceServerUpdate,
-        Delete: resourceServerDelete,
-
-        // Register the attributes of the resource
-
-        Schema: map[string]*schema.Schema{
-            "address": &schema.Schema{
-                Type:     schema.TypeString,
-                Required: true,
-            },
-        },
-    }
-}
-
-// Implement the various crud operations
-
-// Create a resource and set the terraform ID to be used as state - d.SetId("")
-func resourceServerCreate(d *schema.ResourceData, m interface{}) error {
-    return nil
-}
-// Using the Id set by create locate the resource and it's current state.
-// Set the ID to "" if it cannot be found ( has been deleted out of band)
-func resourceServerRead(d *schema.ResourceData, m interface{}) error {
-    return nil
-}
-
-// Apply any updates to the state of the resrouce
-func resourceServerUpdate(d *schema.ResourceData, m interface{}) error {
-    return nil
-}
-
-// Delete the resource
-func resourceServerDelete(d *schema.ResourceData, m interface{}) error {
-    return nil
-}
-```
