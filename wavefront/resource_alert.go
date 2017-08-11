@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/spaceapegames/go-wavefront"
-	"log"
 )
 
 func resourceAlert() *schema.Resource {
@@ -53,16 +52,7 @@ func resourceAlert() *schema.Resource {
 }
 
 func resourceServerCreate(d *schema.ResourceData, m interface{}) error {
-	//configure a client
-	config := &wavefront.Config{
-		Token:   m.(*wavefrontConfig).token,
-		Address: m.(*wavefrontConfig).address,
-	}
-	client, err := wavefront.NewClient(config)
-	if err != nil {
-		return fmt.Errorf("Failed to configure Wavefront Client %s", err)
-	}
-	alerts := client.Alerts()
+	alerts := m.(*wavefrontClient).client.Alerts()
 
 	var tags []string
 	for _, tag := range d.Get("tags").([]interface{}) {
@@ -81,7 +71,7 @@ func resourceServerCreate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	// Create the alert on Wavefront
-	err = alerts.Create(a)
+	err := alerts.Create(a)
 	if err != nil {
 		return fmt.Errorf("Error Creating Alert %s. %s", d.Get("name"), err)
 	}
@@ -92,20 +82,7 @@ func resourceServerCreate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceServerRead(d *schema.ResourceData, m interface{}) error {
-
-	//configure a client
-	config := &wavefront.Config{
-		Token:   m.(*wavefrontConfig).token,
-		Address: m.(*wavefrontConfig).address,
-	}
-	client, err := wavefront.NewClient(config)
-	if err != nil {
-		log.Fatal(err)
-	}
-	if err != nil {
-		return fmt.Errorf("Failed to configure Wavefront Client %s", err)
-	}
-	alerts := client.Alerts()
+	alerts := m.(*wavefrontClient).client.Alerts()
 
 	// search for an alert with out id. We should recieve 1 (Exact Match) or 0 (No Match)
 	results, err := alerts.Find(
@@ -131,19 +108,7 @@ func resourceServerRead(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceServerUpdate(d *schema.ResourceData, m interface{}) error {
-	//configure a client
-	config := &wavefront.Config{
-		Token:   m.(*wavefrontConfig).token,
-		Address: m.(*wavefrontConfig).address,
-	}
-	client, err := wavefront.NewClient(config)
-	if err != nil {
-		log.Fatal(err)
-	}
-	if err != nil {
-		return fmt.Errorf("Failed to configure Wavefront Client %s", err)
-	}
-	alerts := client.Alerts()
+	alerts := m.(*wavefrontClient).client.Alerts()
 
 	results, err := alerts.Find(
 		[]*wavefront.SearchCondition{
@@ -181,19 +146,7 @@ func resourceServerUpdate(d *schema.ResourceData, m interface{}) error {
 }
 
 func resourceServerDelete(d *schema.ResourceData, m interface{}) error {
-	//configure a client
-	config := &wavefront.Config{
-		Token:   m.(*wavefrontConfig).token,
-		Address: m.(*wavefrontConfig).address,
-	}
-	client, err := wavefront.NewClient(config)
-	if err != nil {
-		log.Fatal(err)
-	}
-	if err != nil {
-		return fmt.Errorf("Failed to configure Wavefront Client %s", err)
-	}
-	alerts := client.Alerts()
+	alerts := m.(*wavefrontClient).client.Alerts()
 
 	results, err := alerts.Find(
 		[]*wavefront.SearchCondition{

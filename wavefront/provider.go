@@ -1,13 +1,14 @@
 package wavefront_plugin
 
 import (
+	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
+	"github.com/spaceapegames/go-wavefront"
 )
 
-type wavefrontConfig struct {
-	address string
-	token   string
+type wavefrontClient struct {
+	client wavefront.Client
 }
 
 func Provider() terraform.ResourceProvider {
@@ -32,9 +33,16 @@ func Provider() terraform.ResourceProvider {
 }
 
 func providerConfigure(d *schema.ResourceData) (interface{}, error) {
-	return &wavefrontConfig{
-		address: d.Get("address").(string),
-		token:   d.Get("token").(string),
+	config := &wavefront.Config{
+		Address: d.Get("address").(string),
+		Token:   d.Get("token").(string),
+	}
+	wFClient, err := wavefront.NewClient(config)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to configure Wavefront Client %s", err)
+	}
+	return &wavefrontClient{
+		client: *wFClient,
 	}, nil
 
 }

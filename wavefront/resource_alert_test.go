@@ -107,16 +107,7 @@ func TestAccWavefrontAlert_Multiple(t *testing.T) {
 
 func testAccCheckWavefrontAlertDestroy(s *terraform.State) error {
 
-	//configure a client
-	config := &wavefront.Config{
-		Token:   testAccProvider.Meta().(*wavefrontConfig).token,
-		Address: testAccProvider.Meta().(*wavefrontConfig).address,
-	}
-	client, err := wavefront.NewClient(config)
-	if err != nil {
-		return fmt.Errorf("Failed to configure Wavefront Client %s", err)
-	}
-	alerts := client.Alerts()
+	alerts := testAccProvider.Meta().(*wavefrontClient).client.Alerts()
 
 	for _, rs := range s.RootModule().Resources {
 		if rs.Type != "wavefront_alert" {
@@ -176,15 +167,8 @@ func testAccCheckWavefrontAlertExists(n string, alert *wavefront.Alert) resource
 			return fmt.Errorf("No Record ID is set")
 		}
 
-		config := &wavefront.Config{
-			Token:   testAccProvider.Meta().(*wavefrontConfig).token,
-			Address: testAccProvider.Meta().(*wavefrontConfig).address,
-		}
-		client, err := wavefront.NewClient(config)
-		if err != nil {
-			return fmt.Errorf("Failed to configure Wavefront Client %s", err)
-		}
-		alerts := client.Alerts()
+		alerts := testAccProvider.Meta().(*wavefrontClient).client.Alerts()
+
 		results, err := alerts.Find(
 			[]*wavefront.SearchCondition{
 				&wavefront.SearchCondition{
