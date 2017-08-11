@@ -10,6 +10,12 @@ Go
 Terraform 0.10.0 or higher (Custom providers were released at 0.10.0)
 govendor for dependency management
 
+## Known Issues
+There is an issue with the wavefront API when applying tagged alerts that it will cause a race condition. They are working on fixing this.
+
+To ensure that applies of more than one Alert are successful you can use  the `-parallelism` flag to prevent parallel resource creations
+`terraform apply -parallelism=1`
+
 ## Building and Testing
 
 ### Build the plugin.
