@@ -26,7 +26,8 @@ func Provider() terraform.ResourceProvider {
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			"wavefront_alert": resourceAlert(),
+			"wavefront_alert":     resourceAlert(),
+			"wavefront_dashboard": resourceDashboard(),
 		},
 		ConfigureFunc: providerConfigure,
 	}
