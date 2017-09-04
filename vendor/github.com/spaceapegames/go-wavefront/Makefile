@@ -1,10 +1,7 @@
-TEST?=$$(go list ./... |grep -v 'vendor')
+TEST?=$$(go list ./... |grep -v 'vendor'|grep -v 'examples')
 GOFMT_FILES?=$$(find . -name '*.go' |grep -v vendor)
 
-default: build
-
-build: fmtcheck
-	go build -o terraform-provider-wavefront
+default: test
 
 fmtcheck:
 	@sh -c "'$(CURDIR)/scripts/gofmtcheck.sh'"
@@ -22,17 +19,9 @@ vet:
 	fi
 
 errcheck:
-	@sh -c "'$(CURDIR)/scripts/errcheck.sh'"
-
-vendor-status:
-	@govendor status
+	@sh -c "'$(CURDIR)/scripts/errcheck.sh'" | grep -v example
 
 test: fmtcheck
 	go test -i $(TEST) || exit 1
 	echo $(TEST) | \
-		xargs -t -n4 go test $(TESTARGS) -timeout=30s -parallel=4
-
-acceptance: fmtcheck
-	go test -v -i $(TEST) || exit 1
-	echo $(TEST) | \
-		TF_ACC=true xargs -t -n4 go test -v $(TESTARGS) -parallel=4
+		xargs -t -n4 go test -v $(TESTARGS) -timeout=30s -parallel=4

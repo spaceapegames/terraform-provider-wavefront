@@ -1,3 +1,5 @@
 .terraform/
 terraform.tfstate*
 terraform-provider-wavefront
+crash.log
+main.tf
