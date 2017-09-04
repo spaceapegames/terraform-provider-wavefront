@@ -80,7 +80,8 @@ func TestAccWavefrontAlert_Updated(t *testing.T) {
 	})
 }
 
-// Fails due to Wavefront known issue. Uncomment when that is fixed.
+// Fails due to Wavefront known issue - creating multiple tagged alerts causes a race condition. Only one will succeed.
+// Uncomment when that is fixed.
 //func TestAccWavefrontAlert_Multiple(t *testing.T) {
 //	var record wavefront.Alert
 //
