@@ -338,12 +338,12 @@ func resourceDashboardCreate(d *schema.ResourceData, m interface{}) error {
 	dashboards := m.(*wavefrontClient).client.Dashboards()
 	dashboard, err := buildDashboard(d)
 	if err != nil {
-		fmt.Errorf("Failed to parse dashboard, %s", err)
+		return fmt.Errorf("Failed to parse dashboard, %s", err)
 	}
 
 	err = dashboards.Create(dashboard)
 	if err != nil {
-		fmt.Errorf("Failed to create dashboard, %s", err)
+		return fmt.Errorf("Failed to create dashboard, %s", err)
 	}
 	d.SetId(dashboard.ID)
 
@@ -393,7 +393,7 @@ func resourceDashboardUpdate(d *schema.ResourceData, m interface{}) error {
 
 	a, err := buildDashboard(d)
 	if err != nil {
-		fmt.Errorf("Failed to parse dashboard, %s", err)
+		return fmt.Errorf("Failed to parse dashboard, %s", err)
 	}
 
 	// Update the dashboard on Wavefront
