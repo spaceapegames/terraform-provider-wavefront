@@ -204,7 +204,7 @@ resource "wavefront_alert" "test_alert" {
   name = "Terraform Test Alert"
   target = "test@example.com"
   condition = "100-ts(\"cpu.usage_idle\", environment=preprod and cpu=cpu-total ) > 80"
-	additional_information = "This is a Terraform Test Alert"
+  additional_information = "This is a Terraform Test Alert"
   display_expression = "100-ts(\"cpu.usage_idle\", environment=preprod and cpu=cpu-total )"
   minutes = 5
   resolve_after_minutes = 5
@@ -223,7 +223,7 @@ resource "wavefront_alert" "test_alert" {
   name = "Terraform Test Alert"
   target = "terraform@example.com"
   condition = "100-ts(\"cpu.usage_idle\", environment=preprod and cpu=cpu-total ) > 80"
-	additional_information = "This is a Terraform Test Alert"
+  additional_information = "This is a Terraform Test Alert"
   display_expression = "100-ts(\"cpu.usage_idle\", environment=preprod and cpu=cpu-total )"
   minutes = 5
   resolve_after_minutes = 5
@@ -242,7 +242,7 @@ resource "wavefront_alert" "test_alert1" {
   name = "Terraform Test Alert 1"
   target = "terraform@example.com"
   condition = "100-ts(\"cpu.usage_idle\", environment=preprod and cpu=cpu-total ) > 80"
-	additional_information = "This is a Terraform Test Alert"
+  additional_information = "This is a Terraform Test Alert"
   display_expression = "100-ts(\"cpu.usage_idle\", environment=preprod and cpu=cpu-total )"
   minutes = 5
   resolve_after_minutes = 5
@@ -255,7 +255,7 @@ resource "wavefront_alert" "test_alert2" {
   name = "Terraform Test Alert 2"
   target = "terraform@example.com"
   condition = "100-ts(\"cpu.usage_idle\", environment=preprod and cpu=cpu-total ) > 80"
-	additional_information = "This is a Terraform Test Alert"
+  additional_information = "This is a Terraform Test Alert"
   display_expression = "100-ts(\"cpu.usage_idle\", environment=preprod and cpu=cpu-total )"
   minutes = 5
   resolve_after_minutes = 5
@@ -269,7 +269,7 @@ resource "wavefront_alert" "test_alert3" {
   name = "Terraform Test Alert 3"
   target = "terraform@example.com"
   condition = "100-ts(\"cpu.usage_idle\", environment=preprod and cpu=cpu-total ) > 80"
-	additional_information = "This is a Terraform Test Alert"
+  additional_information = "This is a Terraform Test Alert"
   display_expression = "100-ts(\"cpu.usage_idle\", environment=preprod and cpu=cpu-total )"
   minutes = 5
   resolve_after_minutes = 5
