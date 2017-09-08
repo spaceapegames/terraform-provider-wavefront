@@ -2,6 +2,7 @@ package wavefront_plugin
 
 import (
 	"fmt"
+
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/spaceapegames/go-wavefront"
 )
@@ -28,6 +29,10 @@ func resourceAlert() *schema.Resource {
 			"condition": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
+			},
+			"additional_information": &schema.Schema{
+				Type:     schema.TypeString,
+				Optional: true,
 			},
 			"display_expression": &schema.Schema{
 				Type:     schema.TypeString,

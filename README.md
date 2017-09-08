@@ -7,7 +7,7 @@ A Terraform Provider to manage resources in Wavefront. Currently supports Alerts
 ## Requirements
 * Go version 1.8 or higher
 * Terraform 0.10.0 or higher (Custom providers were released at 0.10.0)
-* dep for dependency management
+* [govendor](https://github.com/kardianos/govendor) for dependency management
 
 ## Known Issues
 
