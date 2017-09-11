@@ -71,6 +71,7 @@ func resourceAlertCreate(d *schema.ResourceData, m interface{}) error {
 		Name:                d.Get("name").(string),
 		Target:              d.Get("target").(string),
 		Condition:           d.Get("condition").(string),
+		AdditionalInfo:      d.Get("additional_information").(string),
 		DisplayExpression:   d.Get("display_expression").(string),
 		Minutes:             d.Get("minutes").(int),
 		ResolveAfterMinutes: d.Get("resolve_after_minutes").(int),
@@ -115,6 +116,7 @@ func resourceAlertRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("name", results[0].Name)
 	d.Set("target", results[0].Target)
 	d.Set("condition", results[0].Condition)
+	d.Set("additional_information", results[0].AdditionalInfo)
 	d.Set("display_expression", results[0].DisplayExpression)
 	d.Set("minutes", results[0].Minutes)
 	d.Set("resolve_after_minutes", results[0].ResolveAfterMinutes)
@@ -148,6 +150,7 @@ func resourceAlertUpdate(d *schema.ResourceData, m interface{}) error {
 	a.Name = d.Get("name").(string)
 	a.Target = d.Get("target").(string)
 	a.Condition = d.Get("condition").(string)
+	a.AdditionalInfo = d.Get("additional_information").(string)
 	a.DisplayExpression = d.Get("display_expression").(string)
 	a.Minutes = d.Get("minutes").(int)
 	a.ResolveAfterMinutes = d.Get("resolve_after_minutes").(int)
