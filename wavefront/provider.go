@@ -2,6 +2,7 @@ package wavefront_plugin
 
 import (
 	"fmt"
+
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/spaceapegames/go-wavefront"
@@ -26,8 +27,9 @@ func Provider() terraform.ResourceProvider {
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			"wavefront_alert":     resourceAlert(),
-			"wavefront_dashboard": resourceDashboard(),
+			"wavefront_alert":        resourceAlert(),
+			"wavefront_dashboard":    resourceDashboard(),
+			"wavefront_alert_target": resourceTarget(),
 		},
 		ConfigureFunc: providerConfigure,
 	}
