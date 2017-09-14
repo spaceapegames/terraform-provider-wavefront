@@ -39,7 +39,7 @@ func testAccCheckWavefrontTargetImporter_basic() string {
 	  name = "Terraform Test Target"
 		description = "Test target"
 		method = "WEBHOOK"
-	  recipient = "https://hooks.slack.com/services/test/me"
+		recipient = "https://hooks.slack.com/services/test/me"
 		content_type = "application/json"
 		custom_headers = {
 			"Testing" = "true"
