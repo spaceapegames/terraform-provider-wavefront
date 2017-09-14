@@ -2,7 +2,7 @@
 
 # Wavefront Terraform Provider
 
-A Terraform Provider to manage resources in Wavefront. Currently supports Alerts, the hope is to support Dashboards and more in the future.
+A Terraform Provider to manage resources in Wavefront. Currently supports Alerts, Alert Targets and Dashboards.
 
 ## Requirements
 * Go version 1.8 or higher
