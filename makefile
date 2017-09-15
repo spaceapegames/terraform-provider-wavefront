@@ -12,7 +12,7 @@ fmtcheck:
 fmt:
 	gofmt -w $(GOFMT_FILES)
 
-release: fmtcheck
+release:
 	docker run --rm -v "$$PWD"\:/go/src/github.com/spaceapegames/terraform-provider-wavefront -w /go/src/github.com/spaceapegames/terraform-provider-wavefront golang\:1.8 make
 	docker build -t go-code-release .
 	mv terraform-provider-wavefront terraform-provider-wavefront_$(VERSION)
