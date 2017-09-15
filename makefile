@@ -12,6 +12,12 @@ fmtcheck:
 fmt:
 	gofmt -w $(GOFMT_FILES)
 
+release:
+	docker run --rm -v "$$PWD"\:/go/src/github.com/spaceapegames/terraform-provider-wavefront -w /go/src/github.com/spaceapegames/terraform-provider-wavefront golang\:1.8 make
+	docker build -t go-code-release .
+	mv terraform-provider-wavefront terraform-provider-wavefront_$(VERSION)
+	docker run -v "$$PWD"\:/tmp -w /tmp -e GITHUB_TOKEN -e 'VERSION' -e 'BINARY' --rm go-code-release
+
 vet:
 	@echo "go vet ."
 	@go vet $$(go list ./... | grep -v vendor/) ; if [ $$? -eq 1 ]; then \
