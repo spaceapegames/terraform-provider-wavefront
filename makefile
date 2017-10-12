@@ -21,7 +21,7 @@ release:
 	docker run --rm -v "$$PWD"\:/go/src/github.com/spaceapegames/terraform-provider-wavefront -w /go/src/github.com/spaceapegames/terraform-provider-wavefront golang\:1.8 make
 	docker build -t go-code-release .
 	mkdir -p pkg
-	rm pkg/*
+	rm -f pkg/*
 	mv terraform-provider-wavefront* pkg
 	docker run -v "$$PWD"\:/tmp -w /tmp -e GITHUB_TOKEN -e 'VERSION' --rm go-code-release
 
