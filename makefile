@@ -1,10 +1,15 @@
 TEST?=$$(go list ./... |grep -v 'vendor')
 GOFMT_FILES?=$$(find . -name '*.go' |grep -v vendor)
+$(eval VERSION=$(shell cat version))
 
 default: build
 
 build: fmtcheck
-	go build -o terraform-provider-wavefront
+	$(eval GOOS=linux)
+	$(eval GOARCH=amd64)
+	go build -o terraform-provider-wavefront_$(VERSION)_$(GOOS)_$(GOARCH)
+	$(eval GOOS=darwin)
+	go build -o terraform-provider-wavefront_$(VERSION)_$(GOOS)_$(GOARCH)
 
 fmtcheck:
 	@sh -c "'$(CURDIR)/scripts/gofmtcheck.sh'"
@@ -15,8 +20,10 @@ fmt:
 release:
 	docker run --rm -v "$$PWD"\:/go/src/github.com/spaceapegames/terraform-provider-wavefront -w /go/src/github.com/spaceapegames/terraform-provider-wavefront golang\:1.8 make
 	docker build -t go-code-release .
-	mv terraform-provider-wavefront terraform-provider-wavefront_$(VERSION)
-	docker run -v "$$PWD"\:/tmp -w /tmp -e GITHUB_TOKEN -e 'VERSION' -e 'BINARY' --rm go-code-release
+	mkdir -p pkg
+	rm pkg/*
+	mv terraform-provider-wavefront* pkg
+	docker run -v "$$PWD"\:/tmp -w /tmp -e GITHUB_TOKEN -e 'VERSION' --rm go-code-release
 
 vet:
 	@echo "go vet ."

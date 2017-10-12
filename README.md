@@ -9,6 +9,14 @@ A Terraform Provider to manage resources in Wavefront. Currently supports Alerts
 * Terraform 0.10.0 or higher (Custom providers were released at 0.10.0)
 * [govendor](https://github.com/kardianos/govendor) for dependency management
 
+## Installing the Plugin
+
+We release darwin and linux amd64 packages on the [releases page](https://github.com/spaceapegames/terraform-provider-wavefront/releases). If you require a different architecture you will need to build the plugin from source, see below for more details:
+
+Once one have the plugin you should remove the `_os_arch` from the end of the file name and place it in `.terraform.d/plugins` which is where `terraform init` will look for plugins.
+
+Valid provider filenames are `terraform-provider-NAME_X.X.X` or `terraform-provider-NAME_vX.X.X`
+
 ## Known Issues
 
 There is an issue with the wavefront API when applying tagged alerts that it will cause a race condition. They are working on fixing this.
@@ -22,7 +30,7 @@ To ensure that applies of more than one Alert are successful you can use  the `-
 
 `make build`
 
-This will create the plugin binary ./terraform-provider-wavefront
+This will build amd64 arch binaries for darwin and linux in the format terraform-provider-wavefront_<version>_<targetOS>_<arch>
 
 ### Unit Test
 `make test`
@@ -37,7 +45,7 @@ To run the tests run
 
 ### Running the Plugin
 
-Use the main.tf to create some test config, such as
+Use a main.tf to create some test config, such as
 
 ```
  provider "wavefront" {
