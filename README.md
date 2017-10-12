@@ -13,7 +13,7 @@ A Terraform Provider to manage resources in Wavefront. Currently supports Alerts
 
 We release darwin and linux amd64 packages on the [releases page](https://github.com/spaceapegames/terraform-provider-wavefront/releases). If you require a different architecture you will need to build the plugin from source, see below for more details:
 
-Once one have the plugin you should remove the `_os_arch` from the end of the file name and place it in `.terraform.d/plugins` which is where `terraform init` will look for plugins.
+Once you have the plugin you should remove the `_os_arch` from the end of the file name and place it in `.terraform.d/plugins` which is where `terraform init` will look for plugins.
 
 Valid provider filenames are `terraform-provider-NAME_X.X.X` or `terraform-provider-NAME_vX.X.X`
 
