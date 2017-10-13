@@ -36,7 +36,7 @@ func resourceAlert() *schema.Resource {
 			},
 			"display_expression": &schema.Schema{
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
 			},
 			"minutes": &schema.Schema{
 				Type:     schema.TypeInt,
@@ -44,7 +44,7 @@ func resourceAlert() *schema.Resource {
 			},
 			"resolve_after_minutes": &schema.Schema{
 				Type:     schema.TypeInt,
-				Required: true,
+				Optional: true,
 			},
 			"severity": &schema.Schema{
 				Type:     schema.TypeString,
