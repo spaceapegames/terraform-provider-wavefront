@@ -17,7 +17,7 @@ func TestAccWavefrontAlert_Basic(t *testing.T) {
 		Providers:    testAccProviders,
 		CheckDestroy: testAccCheckWavefrontAlertDestroy,
 		Steps: []resource.TestStep{
-			resource.TestStep{
+			{
 				Config: testAccCheckWavefrontAlert_basic(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckWavefrontAlertExists("wavefront_alert.test_alert", &record),
@@ -52,6 +52,45 @@ func TestAccWavefrontAlert_Basic(t *testing.T) {
 	})
 }
 
+func TestAccWavefrontAlert_RequiredAttributes(t *testing.T) {
+	var record wavefront.Alert
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckWavefrontAlertDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckWavefrontAlert_requiredAttributes(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckWavefrontAlertExists("wavefront_alert.test_alert_required", &record),
+					testAccCheckWavefrontAlertAttributes(&record),
+
+					// Check against state that the attributes are as we expect
+					resource.TestCheckResourceAttr(
+						"wavefront_alert.test_alert_required", "name", "Terraform Test Alert Required Attributes Only"),
+					resource.TestCheckResourceAttr(
+						"wavefront_alert.test_alert_required", "target", "test@example.com"),
+					resource.TestCheckResourceAttr(
+						"wavefront_alert.test_alert_required", "condition", "100-ts(\"cpu.usage_idle\", environment=preprod and cpu=cpu-total ) > 80"),
+					resource.TestCheckResourceAttr(
+						"wavefront_alert.test_alert_required", "additional_information", "This is a Terraform Test Alert Required"),
+					resource.TestCheckResourceAttr(
+						"wavefront_alert.test_alert_required", "minutes", "5"),
+					resource.TestCheckResourceAttr(
+						"wavefront_alert.test_alert_required", "severity", "WARN"),
+					resource.TestCheckResourceAttr(
+						"wavefront_alert.test_alert_required", "tags.#", "2"),
+					resource.TestCheckResourceAttr(
+						"wavefront_alert.test_alert_required", "tags.0", "terraform"),
+					resource.TestCheckResourceAttr(
+						"wavefront_alert.test_alert_required", "tags.1", "test"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccWavefrontAlert_Updated(t *testing.T) {
 	var record wavefront.Alert
 
@@ -76,6 +115,36 @@ func TestAccWavefrontAlert_Updated(t *testing.T) {
 					testAccCheckWavefrontAlertAttributesUpdated(&record),
 					resource.TestCheckResourceAttr(
 						"wavefront_alert.test_alert", "target", "terraform@example.com"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccWavefrontAlert_RemoveOptionalAttribute(t *testing.T) {
+	var record wavefront.Alert
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckWavefrontAlertDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckWavefrontAlert_RemoveAttributes(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckWavefrontAlertExists("wavefront_alert.test_alert_required", &record),
+					testAccCheckWavefrontAlertAttributesRemoved(&record),
+					resource.TestCheckResourceAttr(
+						"wavefront_alert.test_alert_required", "target", "test@example.com"),
+				),
+			},
+			{
+				Config: testAccCheckWavefrontAlert_UpdatedRemoveAttributes(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckWavefrontAlertExists("wavefront_alert.test_alert_required", &record),
+					testAccCheckWavefrontAlertAttributesRemovedUpdated(&record),
+					resource.TestCheckResourceAttr(
+						"wavefront_alert.test_alert_required", "target", "terraform@example.com"),
 				),
 			},
 		},
@@ -120,7 +189,7 @@ func testAccCheckWavefrontAlertDestroy(s *terraform.State) error {
 
 		results, err := alerts.Find(
 			[]*wavefront.SearchCondition{
-				&wavefront.SearchCondition{
+				{
 					Key:            "id",
 					Value:          rs.Primary.ID,
 					MatchingMethod: "EXACT",
@@ -152,7 +221,29 @@ func testAccCheckWavefrontAlertAttributesUpdated(alert *wavefront.Alert) resourc
 	return func(s *terraform.State) error {
 
 		if alert.Target != "terraform@example.com" {
-			return fmt.Errorf("Bad value: %s", alert.Target)
+			return fmt.Errorf("bad value: %s", alert.Target)
+		}
+
+		return nil
+	}
+}
+
+func testAccCheckWavefrontAlertAttributesRemoved(alert *wavefront.Alert) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+
+		if alert.ResolveAfterMinutes != 5 {
+			return fmt.Errorf("unexpected value for ResolveAfterMinutes %s, expected 5", alert.ResolveAfterMinutes)
+		}
+
+		return nil
+	}
+}
+
+func testAccCheckWavefrontAlertAttributesRemovedUpdated(alert *wavefront.Alert) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+
+		if alert.ResolveAfterMinutes != 0 {
+			return fmt.Errorf("unexpected value for ResolveAfterMinutes %s, expected 0", alert.ResolveAfterMinutes)
 		}
 
 		return nil
@@ -175,7 +266,7 @@ func testAccCheckWavefrontAlertExists(n string, alert *wavefront.Alert) resource
 
 		results, err := alerts.Find(
 			[]*wavefront.SearchCondition{
-				&wavefront.SearchCondition{
+				{
 					Key:            "id",
 					Value:          rs.Primary.ID,
 					MatchingMethod: "EXACT",
@@ -208,6 +299,58 @@ resource "wavefront_alert" "test_alert" {
   display_expression = "100-ts(\"cpu.usage_idle\", environment=preprod and cpu=cpu-total )"
   minutes = 5
   resolve_after_minutes = 5
+  severity = "WARN"
+  tags = [
+    "terraform",
+    "test"
+  ]
+}
+`)
+}
+
+func testAccCheckWavefrontAlert_RemoveAttributes() string {
+	return fmt.Sprintf(`
+resource "wavefront_alert" "test_alert_required" {
+  name = "Terraform Test Alert Required Attributes Only"
+  target = "test@example.com"
+  condition = "100-ts(\"cpu.usage_idle\", environment=preprod and cpu=cpu-total ) > 80"
+  additional_information = "This is a Terraform Test Alert Required"
+  minutes = 5
+  resolve_after_minutes = 5
+  severity = "WARN"
+  tags = [
+    "terraform",
+    "test"
+  ]
+}
+`)
+}
+
+func testAccCheckWavefrontAlert_UpdatedRemoveAttributes() string {
+	return fmt.Sprintf(`
+resource "wavefront_alert" "test_alert_required" {
+  name = "Terraform Test Alert Required Attributes Only"
+  target = "terraform@example.com"
+  condition = "100-ts(\"cpu.usage_idle\", environment=preprod and cpu=cpu-total ) > 80"
+  additional_information = "This is a Terraform Test Alert Required"
+  minutes = 5
+  severity = "WARN"
+  tags = [
+    "terraform",
+    "test"
+  ]
+}
+`)
+}
+
+func testAccCheckWavefrontAlert_requiredAttributes() string {
+	return fmt.Sprintf(`
+resource "wavefront_alert" "test_alert_required" {
+  name = "Terraform Test Alert Required Attributes Only"
+  target = "test@example.com"
+  condition = "100-ts(\"cpu.usage_idle\", environment=preprod and cpu=cpu-total ) > 80"
+  additional_information = "This is a Terraform Test Alert Required"
+  minutes = 5
   severity = "WARN"
   tags = [
     "terraform",
