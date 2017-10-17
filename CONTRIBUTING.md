@@ -1,6 +1,6 @@
 # Contributing
 
-We welcome contributors to this Terraform Provider and we'll do our best to review and merge all requests. Generally adding missing features (as per the [Wavefront API](https://spaceape.wavefront.com/api-docs/ui/)) or bug fixes will be welcomed, functional changes may probably require some discussion first.
+We welcome contributors to this Terraform Provider and we'll do our best to review and merge all requests. Generally adding missing features (as per the [Wavefront API](https://www.wavefront.com/api/) or bug fixes will be welcomed, functional changes may probably require some discussion first.
 
 We make use of [go-wavefront](https://github.com/spaceapegames/go-wavefront) to abstract the API from the provider. New features (and possibly bug fixes) will likely require updates to go-wavefront
 
