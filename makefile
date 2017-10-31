@@ -5,11 +5,7 @@ $(eval VERSION=$(shell cat version))
 default: build
 
 build: fmtcheck
-	$(eval GOOS=linux)
-	$(eval GOARCH=amd64)
-	go build -o terraform-provider-wavefront_$(VERSION)_$(GOOS)_$(GOARCH)
-	$(eval GOOS=darwin)
-	go build -o terraform-provider-wavefront_$(VERSION)_$(GOOS)_$(GOARCH)
+	./build.sh
 
 fmtcheck:
 	@sh -c "'$(CURDIR)/scripts/gofmtcheck.sh'"
