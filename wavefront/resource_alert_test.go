@@ -151,32 +151,32 @@ func TestAccWavefrontAlert_RemoveOptionalAttribute(t *testing.T) {
 	})
 }
 
-// Fails due to Wavefront known issue - creating multiple tagged alerts causes a race condition. Only one will succeed.
-// Uncomment when that is fixed.
-//func TestAccWavefrontAlert_Multiple(t *testing.T) {
-//	var record wavefront.Alert
-//
-//	resource.Test(t, resource.TestCase{
-//		PreCheck:     func() { testAccPreCheck(t) },
-//		Providers:    testAccProviders,
-//		CheckDestroy: testAccCheckWavefrontAlertDestroy,
-//		Steps: []resource.TestStep{
-//			resource.TestStep{
-//				Config: testAccCheckWavefrontAlert_multiple(),
-//				Check: resource.ComposeTestCheckFunc(
-//					testAccCheckWavefrontAlertExists("wavefront_alert.test_alert1", &record),
-//					testAccCheckWavefrontAlertAttributes(&record),
-//					resource.TestCheckResourceAttr(
-//						"wavefront_alert.test_alert1", "name", "Terraform Test Alert1"),
-//					resource.TestCheckResourceAttr(
-//						"wavefront_alert.test_alert2", "name", "Terraform Test Alert2"),
-//					resource.TestCheckResourceAttr(
-//						"wavefront_alert.test_alert3", "name", "Terraform Test Alert3"),
-//				),
-//			},
-//		},
-//	})
-//}
+//Fails due to Wavefront known issue - creating multiple tagged alerts causes a race condition. Only one will succeed.
+//Uncomment when that is fixed.
+func TestAccWavefrontAlert_Multiple(t *testing.T) {
+	var record wavefront.Alert
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckWavefrontAlertDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckWavefrontAlert_multiple(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckWavefrontAlertExists("wavefront_alert.test_alert1", &record),
+					testAccCheckWavefrontAlertAttributes(&record),
+					resource.TestCheckResourceAttr(
+						"wavefront_alert.test_alert1", "name", "Terraform Test Alert 1"),
+					resource.TestCheckResourceAttr(
+						"wavefront_alert.test_alert2", "name", "Terraform Test Alert 2"),
+					resource.TestCheckResourceAttr(
+						"wavefront_alert.test_alert3", "name", "Terraform Test Alert 3"),
+				),
+			},
+		},
+	})
+}
 
 func testAccCheckWavefrontAlertDestroy(s *terraform.State) error {
 
@@ -383,7 +383,7 @@ func testAccCheckWavefrontAlert_multiple() string {
 	return fmt.Sprintf(`
 resource "wavefront_alert" "test_alert1" {
   name = "Terraform Test Alert 1"
-  target = "terraform@example.com"
+  target = "test@example.com"
   condition = "100-ts(\"cpu.usage_idle\", environment=preprod and cpu=cpu-total ) > 80"
   additional_information = "This is a Terraform Test Alert"
   display_expression = "100-ts(\"cpu.usage_idle\", environment=preprod and cpu=cpu-total )"
@@ -396,7 +396,7 @@ resource "wavefront_alert" "test_alert1" {
 }
 resource "wavefront_alert" "test_alert2" {
   name = "Terraform Test Alert 2"
-  target = "terraform@example.com"
+  target = "test@example.com"
   condition = "100-ts(\"cpu.usage_idle\", environment=preprod and cpu=cpu-total ) > 80"
   additional_information = "This is a Terraform Test Alert"
   display_expression = "100-ts(\"cpu.usage_idle\", environment=preprod and cpu=cpu-total )"
@@ -410,7 +410,7 @@ resource "wavefront_alert" "test_alert2" {
 }
 resource "wavefront_alert" "test_alert3" {
   name = "Terraform Test Alert 3"
-  target = "terraform@example.com"
+  target = "test@example.com"
   condition = "100-ts(\"cpu.usage_idle\", environment=preprod and cpu=cpu-total ) > 80"
   additional_information = "This is a Terraform Test Alert"
   display_expression = "100-ts(\"cpu.usage_idle\", environment=preprod and cpu=cpu-total )"

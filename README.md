@@ -19,7 +19,7 @@ Valid provider filenames are `terraform-provider-NAME_X.X.X` or `terraform-provi
 
 ## Known Issues
 
-There is an issue with the wavefront API when applying tagged alerts that it will cause a race condition. They are working on fixing this.
+There was an issue with the wavefront API when applying tagged alerts that it will cause a race condition. This has been fixed by Wavefront, but it's possible that not all clusters have been upgraded to the version containing the fix. If you run into this issue you can use the following solution until your cluster has been upgraded.
 
 To ensure that applies of more than one Alert are successful you can use  the `-parallelism` flag to prevent parallel resource creations
 `terraform apply -parallelism=1`
