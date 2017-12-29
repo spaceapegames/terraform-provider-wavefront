@@ -25,6 +25,26 @@ func resourceDashboard() *schema.Resource {
 					Required:    true,
 					Description: "Query for the Source",
 				},
+				"disabled": {
+					Type:        schema.TypeBool,
+					Optional:    true,
+					Description: "Whether to disabled the source from being displayed",
+				},
+				"scatter_plot_source": {
+					Type:     schema.TypeString,
+					Optional: true,
+					Default:  "Y",
+				},
+				"query_builder_enabled": {
+					Type:        schema.TypeBool,
+					Optional:    true,
+					Description: "Whether the query builder should be enabled",
+				},
+				"source_description": {
+					Type:        schema.TypeString,
+					Optional:    true,
+					Description: "Description of the source",
+				},
 			},
 		},
 	}
@@ -108,13 +128,22 @@ func resourceDashboard() *schema.Resource {
 					Type:     schema.TypeString,
 					Required: true,
 				},
-				"string_key": {
-					Type:     schema.TypeString,
-					Required: true,
+				"values_to_readable_strings": {
+					Type:        schema.TypeMap,
+					Required:    true,
+					Description: "Map of [string]string. At least one of the keys must match the value of default_value.",
 				},
-				"string_value": {
+				"query_value": {
 					Type:     schema.TypeString,
-					Required: true,
+					Optional: true,
+				},
+				"tag_key": {
+					Type:     schema.TypeString,
+					Optional: true,
+				},
+				"dynamic_field_type": {
+					Type:     schema.TypeString,
+					Optional: true,
 				},
 			},
 		},
@@ -157,15 +186,15 @@ func resourceDashboard() *schema.Resource {
 func buildTerraformParameterDetail(wavefrontParamDetail wavefront.ParameterDetail, name string) map[string]interface{} {
 	parameterDetail := map[string]interface{}{}
 
-	for k, v := range wavefrontParamDetail.ValuesToReadableStrings {
-		parameterDetail["string_key"] = k
-		parameterDetail["string_value"] = v
-	}
 	parameterDetail["name"] = name
 	parameterDetail["label"] = wavefrontParamDetail.Label
 	parameterDetail["parameter_type"] = wavefrontParamDetail.ParameterType
 	parameterDetail["hide_from_view"] = wavefrontParamDetail.HideFromView
 	parameterDetail["default_value"] = wavefrontParamDetail.DefaultValue
+	parameterDetail["values_to_readable_strings"] = wavefrontParamDetail.ValuesToReadableStrings
+	parameterDetail["query_value"] = wavefrontParamDetail.QueryValue
+	parameterDetail["tag_key"] = wavefrontParamDetail.TagKey
+	parameterDetail["dynamic_field_type"] = wavefrontParamDetail.DynamicFieldType
 	return parameterDetail
 }
 
@@ -216,6 +245,10 @@ func buildTerraformSource(wavefront_source wavefront.Source) map[string]interfac
 	source := map[string]interface{}{}
 	source["name"] = wavefront_source.Name
 	source["query"] = wavefront_source.Query
+	source["disabled"] = wavefront_source.Disabled
+	source["scatter_plot_source"] = wavefront_source.ScatterPlotSource
+	source["query_builder_enabled"] = wavefront_source.QuerybuilderEnabled
+	source["source_description"] = wavefront_source.SourceDescription
 
 	return source
 }
@@ -285,6 +318,18 @@ func buildSources(terrafromSources *[]interface{}) *[]wavefront.Source {
 			Name:  t["name"].(string),
 			Query: t["query"].(string),
 		}
+		if t["disabled"] != nil {
+			wavefrontSources[i].Disabled = t["disabled"].(bool)
+		}
+		if t["scatter_plot_source"] != nil {
+			wavefrontSources[i].ScatterPlotSource = t["scatter_plot_source"].(string)
+		}
+		if t["query_builder_enabled"] != nil {
+			wavefrontSources[i].QuerybuilderEnabled = t["query_builder_enabled"].(bool)
+		}
+		if t["source_description"] != nil {
+			wavefrontSources[i].SourceDescription = t["source_description"].(string)
+		}
 	}
 
 	return &wavefrontSources
@@ -296,16 +341,32 @@ func buildParameterDetails(terraformParams *[]interface{}) *map[string]wavefront
 
 	for _, t_ := range *terraformParams {
 		t := t_.(map[string]interface{})
+		name := t["name"].(string)
+		valuesToReadableStrings := t["values_to_readable_strings"].(map[string]interface{})
+		readableStrings := map[string]string{}
 
-		wavefrontParams[t["name"].(string)] = wavefront.ParameterDetail{
-			Label:         t["label"].(string),
-			DefaultValue:  t["default_value"].(string),
-			HideFromView:  t["hide_from_view"].(bool),
-			ParameterType: t["parameter_type"].(string),
-			ValuesToReadableStrings: map[string]string{
-				t["string_key"].(string): t["string_value"].(string),
-			},
+		for k, v := range valuesToReadableStrings {
+			readableStrings[k] = v.(string)
 		}
+
+		wfParam := wavefront.ParameterDetail{
+			Label:                   t["label"].(string),
+			DefaultValue:            t["default_value"].(string),
+			HideFromView:            t["hide_from_view"].(bool),
+			ParameterType:           t["parameter_type"].(string),
+			ValuesToReadableStrings: readableStrings,
+		}
+		if t["query_value"] != nil {
+			wfParam.QueryValue = t["query_value"].(string)
+		}
+		if t["tag_key"] != nil {
+			wfParam.TagKey = t["tag_key"].(string)
+		}
+		if t["dynamic_field_type"] != nil {
+			wfParam.DynamicFieldType = t["dynamic_field_type"].(string)
+		}
+
+		wavefrontParams[name] = wfParam
 	}
 
 	return &wavefrontParams
