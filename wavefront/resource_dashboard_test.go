@@ -233,8 +233,9 @@ func TestBuildParameterDetails(t *testing.T) {
 	param0["default_value"] = "test"
 	param0["hide_from_view"] = true
 	param0["parameter_type"] = "SIMPLE"
-	param0["string_key"] = "test"
-	param0["string_value"] = "test"
+	param0["values_to_readable_strings"] = map[string]interface{}{
+		"test": "test",
+	}
 
 	params := []interface{}{
 		param0,
@@ -304,9 +305,9 @@ func TestAccWavefrontDashboard_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"wavefront_dashboard.test_dashboard", "parameter_details.0.parameter_type", "SIMPLE"),
 					resource.TestCheckResourceAttr(
-						"wavefront_dashboard.test_dashboard", "parameter_details.0.string_key", "Label"),
+						"wavefront_dashboard.test_dashboard", "parameter_details.0.values_to_readable_strings.%", "1"),
 					resource.TestCheckResourceAttr(
-						"wavefront_dashboard.test_dashboard", "parameter_details.0.string_value", "test"),
+						"wavefront_dashboard.test_dashboard", "parameter_details.0.values_to_readable_strings.Label", "test"),
 					resource.TestCheckResourceAttr(
 						"wavefront_dashboard.test_dashboard", "tags.#", "2"),
 					resource.TestCheckResourceAttr(
@@ -367,6 +368,174 @@ func TestAccWavefrontDashboard_Multiple(t *testing.T) {
 						"wavefront_dashboard.test_dashboardb", "name", "Terraform Test Dashboard Multi B"),
 					resource.TestCheckResourceAttr(
 						"wavefront_dashboard.test_dashboardc", "name", "Terraform Test Dashboard Multi C"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccWavefrontDashboard_ListParam(t *testing.T) {
+	var record wavefront.Dashboard
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckWavefrontDashboardDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckWavefrontDashboard_ListParam(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckWavefrontDashboardExists("wavefront_dashboard.list_param_dash", &record),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.list_param_dash", "parameter_details.0.parameter_type", "LIST"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.list_param_dash", "parameter_details.0.values_to_readable_strings.%", "2"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.list_param_dash", "parameter_details.0.values_to_readable_strings.Label", "test"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.list_param_dash", "parameter_details.0.values_to_readable_strings.Label2", "test2"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccWavefrontDashboard_DynamicSourceParam(t *testing.T) {
+	var record wavefront.Dashboard
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckWavefrontDashboardDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckWavefrontDashboard_DynamicSourceParam(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckWavefrontDashboardExists("wavefront_dashboard.dynamic_source_param_dash", &record),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.dynamic_source_param_dash", "parameter_details.0.parameter_type", "DYNAMIC"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.dynamic_source_param_dash", "parameter_details.0.values_to_readable_strings.%", "1"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.dynamic_source_param_dash", "parameter_details.0.values_to_readable_strings.defaultQuery", "bubbles-fullstack-i-09ee71320cf9ba3c4.use1a.apelabs.net"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.dynamic_source_param_dash", "parameter_details.0.dynamic_field_type", "SOURCE"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.dynamic_source_param_dash", "parameter_details.0.query_value", "ts(servers.cpu-3.cpu-nice)"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccWavefrontDashboard_DynamicSourceTagParam(t *testing.T) {
+	var record wavefront.Dashboard
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckWavefrontDashboardDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckWavefrontDashboard_DynamicSourceTagParam(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckWavefrontDashboardExists("wavefront_dashboard.dynamic_source_param_dash", &record),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.dynamic_source_param_dash", "parameter_details.0.parameter_type", "DYNAMIC"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.dynamic_source_param_dash", "parameter_details.0.values_to_readable_strings.%", "1"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.dynamic_source_param_dash", "parameter_details.0.values_to_readable_strings.defaultQuery", "alpha"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.dynamic_source_param_dash", "parameter_details.0.dynamic_field_type", "SOURCE_TAG"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.dynamic_source_param_dash", "parameter_details.0.query_value", "ts(aws.lambda.invocations.average, tag=*)"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccWavefrontDashboard_DynamicMetricNameParam(t *testing.T) {
+	var record wavefront.Dashboard
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckWavefrontDashboardDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckWavefrontDashboard_DynamicMetricNameParam(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckWavefrontDashboardExists("wavefront_dashboard.dynamic_source_param_dash", &record),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.dynamic_source_param_dash", "parameter_details.0.parameter_type", "DYNAMIC"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.dynamic_source_param_dash", "parameter_details.0.values_to_readable_strings.%", "1"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.dynamic_source_param_dash", "parameter_details.0.values_to_readable_strings.defaultQuery", "aws.lambda.invocations.average"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.dynamic_source_param_dash", "parameter_details.0.dynamic_field_type", "METRIC_NAME"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.dynamic_source_param_dash", "parameter_details.0.query_value", "ts(aws.lambda.invocations.average)"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccWavefrontDashboard_DynamicTagKeyParam(t *testing.T) {
+	var record wavefront.Dashboard
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckWavefrontDashboardDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckWavefrontDashboard_DynamicTagKeyParam(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckWavefrontDashboardExists("wavefront_dashboard.dynamic_source_param_dash", &record),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.dynamic_source_param_dash", "parameter_details.0.parameter_type", "DYNAMIC"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.dynamic_source_param_dash", "parameter_details.0.values_to_readable_strings.%", "1"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.dynamic_source_param_dash", "parameter_details.0.values_to_readable_strings.defaultQuery", "aws.lambda.invocations.average"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.dynamic_source_param_dash", "parameter_details.0.dynamic_field_type", "TAG_KEY"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.dynamic_source_param_dash", "parameter_details.0.query_value", "ts(aws.lambda.invocations.average, test=test)"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.dynamic_source_param_dash", "parameter_details.0.tag_key", "test"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccWavefrontDashboard_DynamicMatchingSourceTagParam(t *testing.T) {
+	var record wavefront.Dashboard
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckWavefrontDashboardDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckWavefrontDashboard_DynamicMatchingSourceTagParam(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckWavefrontDashboardExists("wavefront_dashboard.dynamic_source_param_dash", &record),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.dynamic_source_param_dash", "parameter_details.0.parameter_type", "DYNAMIC"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.dynamic_source_param_dash", "parameter_details.0.values_to_readable_strings.%", "1"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.dynamic_source_param_dash", "parameter_details.0.values_to_readable_strings.defaultQuery", "dev-elasticsearch"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.dynamic_source_param_dash", "parameter_details.0.dynamic_field_type", "MATCHING_SOURCE_TAG"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.dynamic_source_param_dash", "parameter_details.0.query_value", "ts(aws.ec2.diskwritebytes.average)"),
 				),
 			},
 		},
@@ -476,8 +645,9 @@ resource "wavefront_dashboard" "test_dashboard" {
     default_value = "Label"
     hide_from_view = false
     parameter_type = "SIMPLE"
-    string_key = "Label"
-    string_value = "test"
+	values_to_readable_strings = {
+		Label = "test"
+	}
   }
   tags = [
     "terraform",
@@ -513,8 +683,9 @@ resource "wavefront_dashboard" "test_dashboard" {
     default_value = "Label"
     hide_from_view = false
     parameter_type = "SIMPLE"
-    string_key = "Label"
-    string_value = "test"
+    values_to_readable_strings = {
+      Label = "test"
+    }
   }
   tags = [
     "terraform",
@@ -550,8 +721,9 @@ resource "wavefront_dashboard" "test_dashboarda" {
     default_value = "Label"
     hide_from_view = false
     parameter_type = "SIMPLE"
-    string_key = "Label"
-    string_value = "test"
+    values_to_readable_strings = {
+      Label = "test"
+    }
   }
   tags = [
     "terraform",
@@ -582,8 +754,9 @@ resource "wavefront_dashboard" "test_dashboardb" {
     default_value = "Label"
     hide_from_view = false
     parameter_type = "SIMPLE"
-    string_key = "Label"
-    string_value = "test"
+    values_to_readable_strings {
+      Label = "test"
+    }
   }
   tags = [
     "terraform",
@@ -614,8 +787,249 @@ resource "wavefront_dashboard" "test_dashboardc" {
     default_value = "Label"
     hide_from_view = false
     parameter_type = "SIMPLE"
-    string_key = "Label"
-    string_value = "test"
+    values_to_readable_strings {
+      Label = "test"
+    }
+  }
+  tags = [
+    "terraform",
+    "test"
+  ]
+}
+`)
+}
+
+func testAccCheckWavefrontDashboard_ListParam() string {
+	return fmt.Sprintf(`
+resource "wavefront_dashboard" "list_param_dash" {
+  name = "Terraform Test Dashboard Updated"
+  description = "testing, testing"
+  url = "tftestcreate"
+  section {
+    name = "section 1"
+    row {
+      chart {
+        name = "chart 1"
+        description = "chart number 1"
+        units = "something per unit"
+        source {
+          name = "source name"
+          query = "ts()"
+        }
+      }
+    }
+  }
+  parameter_details {
+    name = "param1"
+    label = "param1"
+    default_value = "Label"
+    hide_from_view = false
+    parameter_type = "LIST"
+    values_to_readable_strings = {
+      Label = "test",
+      Label2 = "test2"
+    }
+  }
+  tags = [
+    "terraform",
+    "test"
+  ]
+}
+`)
+}
+
+func testAccCheckWavefrontDashboard_DynamicSourceParam() string {
+	return fmt.Sprintf(`
+resource "wavefront_dashboard" "dynamic_source_param_dash" {
+  name = "Terraform Dynamic Source Param"
+  description = "testing, testing"
+  url = "tftestcreate"
+  section {
+    name = "section 1"
+    row {
+      chart {
+        name = "chart 1"
+        description = "chart number 1"
+        units = "something per unit"
+        source {
+          name = "source name"
+          query = "ts()"
+        }
+      }
+    }
+  }
+  parameter_details {
+    name = "param1"
+    label = "param1"
+    default_value = "defaultQuery"
+    hide_from_view = false
+    parameter_type = "DYNAMIC"
+    values_to_readable_strings = {
+      defaultQuery = "bubbles-fullstack-i-09ee71320cf9ba3c4.use1a.apelabs.net"
+    }
+    dynamic_field_type = "SOURCE"
+    query_value = "ts(servers.cpu-3.cpu-nice)"
+  }
+  tags = [
+    "terraform",
+    "test"
+  ]
+}
+`)
+}
+
+func testAccCheckWavefrontDashboard_DynamicSourceTagParam() string {
+	return fmt.Sprintf(`
+resource "wavefront_dashboard" "dynamic_source_param_dash" {
+  name = "Terraform Dynamic Source Tag Param"
+  description = "testing, testing"
+  url = "tftestcreate"
+  section {
+    name = "section 1"
+    row {
+      chart {
+        name = "chart 1"
+        description = "chart number 1"
+        units = "something per unit"
+        source {
+          name = "source name"
+          query = "ts()"
+        }
+      }
+    }
+  }
+  parameter_details {
+    name = "param1"
+    label = "param1"
+    default_value = "defaultQuery"
+    hide_from_view = false
+    parameter_type = "DYNAMIC"
+    values_to_readable_strings = {
+      defaultQuery = "alpha"
+    }
+    dynamic_field_type = "SOURCE_TAG"
+    query_value = "ts(aws.lambda.invocations.average, tag=*)"
+  }
+  tags = [
+    "terraform",
+    "test"
+  ]
+}
+`)
+}
+
+func testAccCheckWavefrontDashboard_DynamicMetricNameParam() string {
+	return fmt.Sprintf(`
+resource "wavefront_dashboard" "dynamic_source_param_dash" {
+  name = "Terraform Dynamic Source Tag Param"
+  description = "testing, testing"
+  url = "tftestcreate"
+  section {
+    name = "section 1"
+    row {
+      chart {
+        name = "chart 1"
+        description = "chart number 1"
+        units = "something per unit"
+        source {
+          name = "source name"
+          query = "ts()"
+        }
+      }
+    }
+  }
+  parameter_details {
+    name = "param1"
+    label = "param1"
+    default_value = "defaultQuery"
+    hide_from_view = false
+    parameter_type = "DYNAMIC"
+    values_to_readable_strings = {
+      defaultQuery = "aws.lambda.invocations.average"
+    }
+    dynamic_field_type = "METRIC_NAME"
+    query_value = "ts(aws.lambda.invocations.average)"
+  }
+  tags = [
+    "terraform",
+    "test"
+  ]
+}
+`)
+}
+
+func testAccCheckWavefrontDashboard_DynamicTagKeyParam() string {
+	return fmt.Sprintf(`
+resource "wavefront_dashboard" "dynamic_source_param_dash" {
+  name = "Terraform Dynamic Source Tag Param"
+  description = "testing, testing"
+  url = "tftestcreate"
+  section {
+    name = "section 1"
+    row {
+      chart {
+        name = "chart 1"
+        description = "chart number 1"
+        units = "something per unit"
+        source {
+          name = "source name"
+          query = "ts()"
+        }
+      }
+    }
+  }
+  parameter_details {
+    name = "param1"
+    label = "param1"
+    default_value = "defaultQuery"
+    hide_from_view = false
+    parameter_type = "DYNAMIC"
+    values_to_readable_strings = {
+      defaultQuery = "aws.lambda.invocations.average"
+    }
+    dynamic_field_type = "TAG_KEY"
+    query_value = "ts(aws.lambda.invocations.average, test=test)"
+    tag_key = "test"
+  }
+  tags = [
+    "terraform",
+    "test"
+  ]
+}
+`)
+}
+
+func testAccCheckWavefrontDashboard_DynamicMatchingSourceTagParam() string {
+	return fmt.Sprintf(`
+resource "wavefront_dashboard" "dynamic_source_param_dash" {
+  name = "Terraform Dynamic Source Tag Param"
+  description = "testing, testing"
+  url = "tftestcreate"
+  section {
+    name = "section 1"
+    row {
+      chart {
+        name = "chart 1"
+        description = "chart number 1"
+        units = "something per unit"
+        source {
+          name = "source name"
+          query = "ts()"
+        }
+      }
+    }
+  }
+  parameter_details {
+    name = "param1"
+    label = "param1"
+    default_value = "defaultQuery"
+    hide_from_view = false
+    parameter_type = "DYNAMIC"
+    values_to_readable_strings = {
+      defaultQuery = "dev-elasticsearch"
+    }
+    dynamic_field_type = "MATCHING_SOURCE_TAG"
+    query_value = "ts(aws.ec2.diskwritebytes.average)"
   }
   tags = [
     "terraform",

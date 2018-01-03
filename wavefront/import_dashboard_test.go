@@ -62,8 +62,9 @@ resource "wavefront_dashboard" "foobar" {
     default_value = "Label"
     hide_from_view = false
     parameter_type = "SIMPLE"
-    string_key = "Label"
-    string_value = "test"
+    values_to_readable_strings = {
+      Label = "test"
+    }
   }
 
   tags = [
