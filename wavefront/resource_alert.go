@@ -2,6 +2,7 @@ package wavefront_plugin
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/spaceapegames/go-wavefront"
@@ -27,16 +28,19 @@ func resourceAlert() *schema.Resource {
 				Required: true,
 			},
 			"condition": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
+				Type:      schema.TypeString,
+				Required:  true,
+				StateFunc: trimSpaces,
 			},
 			"additional_information": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:      schema.TypeString,
+				Optional:  true,
+				StateFunc: trimSpaces,
 			},
 			"display_expression": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:      schema.TypeString,
+				Optional:  true,
+				StateFunc: trimSpaces,
 			},
 			"minutes": &schema.Schema{
 				Type:     schema.TypeInt,
@@ -57,6 +61,10 @@ func resourceAlert() *schema.Resource {
 			},
 		},
 	}
+}
+
+func trimSpaces(d interface{}) string {
+	return strings.TrimSpace(d.(string))
 }
 
 func resourceAlertCreate(d *schema.ResourceData, m interface{}) error {
