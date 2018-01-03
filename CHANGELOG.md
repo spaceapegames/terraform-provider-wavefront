@@ -11,6 +11,12 @@ effectively a separate string_key and the value is a separate string_value.
 
 - Allow disabled, scatter_plot_source, query_builder_enabled, source_description to optionally be applied to sources
 
+## [v0.2.0] - 2018-01-03
+*Updated README section on handling the creation of multiple alerts*
+*Trim spaces on alert fields that support complex string types*
+
+- Fixed #11 - condition, display_expression, and additional_information have been updated to call TrimSpaces. Preventing multiple plan/applies from re-applying the same state.
+
 ## [v0.1.2] - 2017-10-13
 
 *Allow optional Alert attributes (as defined by the API) to be omitted from Terraform.*
