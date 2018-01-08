@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/spaceapegames/go-wavefront"
+	"sort"
 )
 
 // Terraform Resource Declaration
@@ -411,6 +412,14 @@ func resourceDashboardCreate(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
+type Params []map[string]interface{}
+
+func (p Params) Len() int      { return len(p) }
+func (p Params) Swap(i, j int) { p[i], p[j] = p[j], p[i] }
+func (p Params) Less(i, j int) bool {
+	return sort.StringsAreSorted([]string{p[i]["name"].(string), p[j]["name"].(string)})
+}
+
 // Read a Wavefront Dashboard
 func resourceDashboardRead(d *schema.ResourceData, m interface{}) error {
 	dashboards := m.(*wavefrontClient).client.Dashboards()
@@ -442,6 +451,8 @@ func resourceDashboardRead(d *schema.ResourceData, m interface{}) error {
 	for k, v := range dash.ParameterDetails {
 		parameterDetails = append(parameterDetails, buildTerraformParameterDetail(v, k))
 	}
+
+	sort.Sort(Params(parameterDetails))
 
 	d.Set("parameter_details", parameterDetails)
 	d.Set("tags", dash.Tags)
