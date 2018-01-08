@@ -1,3 +1,9 @@
+## [v1.0.1] - 2018-01-08
+
+*Sort parameter details alphabetically to ensure no changes they are always evaluated in the correct order*
+
+- Sort the parameter details when we 'read' a Dashboard from Wavefront
+
 ## [v1.0.0] - 2017-12-29
 
 *Breaking Change - Add support for Dynamic and List parameter types*

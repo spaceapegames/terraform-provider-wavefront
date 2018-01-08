@@ -389,7 +389,7 @@ func TestAccWavefrontDashboard_ListParam(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"wavefront_dashboard.list_param_dash", "parameter_details.0.parameter_type", "LIST"),
 					resource.TestCheckResourceAttr(
-						"wavefront_dashboard.list_param_dash", "parameter_details.0.values_to_readable_strings.%", "2"),
+						"wavefront_dashboard.list_param_dash", "parameter_details.0.values_to_readable_strings.%", "5"),
 					resource.TestCheckResourceAttr(
 						"wavefront_dashboard.list_param_dash", "parameter_details.0.values_to_readable_strings.Label", "test"),
 					resource.TestCheckResourceAttr(
@@ -826,8 +826,39 @@ resource "wavefront_dashboard" "list_param_dash" {
     hide_from_view = false
     parameter_type = "LIST"
     values_to_readable_strings = {
+      b = "c",
       Label = "test",
-      Label2 = "test2"
+      c = "d"
+      Label2 = "test2",
+      a = "b"
+    }
+  }
+  parameter_details {
+    name = "param2"
+    label = "param2"
+    default_value = "Label"
+    hide_from_view = false
+    parameter_type = "LIST"
+    values_to_readable_strings = {
+      b = "c",
+      Label = "test",
+      c = "d"
+      Label2 = "test2",
+      a = "b"
+    }
+  }
+  parameter_details {
+    name = "param3"
+    label = "param3"
+    default_value = "Label"
+    hide_from_view = false
+    parameter_type = "LIST"
+    values_to_readable_strings = {
+      b = "c",
+      Label = "test",
+      c = "d"
+      Label2 = "test2",
+      a = "b"
     }
   }
   tags = [
