@@ -12,7 +12,7 @@ type Alert struct {
 	Name string `json:"name"`
 
 	// ID is the Wavefront-assigned ID of an existing Alert
-	ID *string `json:"id,omitempty"`
+	ID string `json:"id,omitempty"`
 
 	// AdditionalInfo is any extra information about the Alert
 	AdditionalInfo string `json:"additionalInformation"`
@@ -88,6 +88,16 @@ func (c *Client) Alerts() *Alerts {
 	return &Alerts{client: c}
 }
 
+// Get is used to retrieve an existing Alert by ID.
+// The ID field must be provided
+func (a Alerts) Get(alert *Alert) error {
+	if alert.ID == "" {
+		return fmt.Errorf("Alert id field is not set")
+	}
+
+	return a.crudAlert("GET", fmt.Sprintf("%s/%s", baseAlertPath, alert.ID), alert)
+}
+
 // Find returns all alerts filtered by the given search conditions.
 // If filter is nil, all alerts are returned.
 func (a Alerts) Find(filter []*SearchCondition) ([]*Alert, error) {
@@ -128,28 +138,28 @@ func (a Alerts) Create(alert *Alert) error {
 // Update is used to update an existing Alert.
 // The ID field of the alert must be populated
 func (a Alerts) Update(alert *Alert) error {
-	if alert.ID == nil {
+	if alert.ID == "" {
 		return fmt.Errorf("alert id field not set")
 	}
 
-	return a.crudAlert("PUT", fmt.Sprintf("%s/%s", baseAlertPath, *alert.ID), alert)
+	return a.crudAlert("PUT", fmt.Sprintf("%s/%s", baseAlertPath, alert.ID), alert)
 
 }
 
 // Delete is used to delete an existing Alert.
 // The ID field of the alert must be populated
 func (a Alerts) Delete(alert *Alert) error {
-	if alert.ID == nil {
+	if alert.ID == "" {
 		return fmt.Errorf("alert id field not set")
 	}
 
-	err := a.crudAlert("DELETE", fmt.Sprintf("%s/%s", baseAlertPath, *alert.ID), alert)
+	err := a.crudAlert("DELETE", fmt.Sprintf("%s/%s", baseAlertPath, alert.ID), alert)
 	if err != nil {
 		return err
 	}
 
 	//reset the ID field so deletion is not attempted again
-	alert.ID = nil
+	alert.ID = ""
 	return nil
 
 }
