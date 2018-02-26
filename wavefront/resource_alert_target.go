@@ -102,35 +102,24 @@ func resourceTargetCreate(d *schema.ResourceData, m interface{}) error {
 func resourceTargetRead(d *schema.ResourceData, m interface{}) error {
 	targets := m.(*wavefrontClient).client.Targets()
 
-	// search for a Target with our id. We should recieve 1 (Exact Match) or 0 (No Match)
-	results, err := targets.Find(
-		[]*wavefront.SearchCondition{
-			{
-				Key:            "id",
-				Value:          d.Id(),
-				MatchingMethod: "EXACT",
-			},
-		})
+	targetID := d.Id()
+	tmpTarget := wavefront.Target{ID: &targetID}
+	err := targets.Get(&tmpTarget)
 	if err != nil {
 		return fmt.Errorf("Error finding Wavefront Target %s. %s", d.Id(), err)
 	}
-	// resource has been deleted out of band. So unset ID
-	if len(results) != 1 {
-		d.SetId("")
-		return nil
-	}
 
 	// Use the Wavefront ID as the Terraform ID
-	d.SetId(*results[0].ID)
-	d.Set("name", results[0].Title)
-	d.Set("description", results[0].Description)
-	d.Set("triggers", results[0].Triggers)
-	d.Set("template", results[0].Template)
-	d.Set("method", results[0].Method)
-	d.Set("recipient", results[0].Recipient)
-	d.Set("email_subject", results[0].EmailSubject)
-	d.Set("content_type", results[0].ContentType)
-	d.Set("custom_headers", results[0].CustomHeaders)
+	d.SetId(*tmpTarget.ID)
+	d.Set("name", tmpTarget.Title)
+	d.Set("description", tmpTarget.Description)
+	d.Set("triggers", tmpTarget.Triggers)
+	d.Set("template", tmpTarget.Template)
+	d.Set("method", tmpTarget.Method)
+	d.Set("recipient", tmpTarget.Recipient)
+	d.Set("email_subject", tmpTarget.EmailSubject)
+	d.Set("content_type", tmpTarget.ContentType)
+	d.Set("custom_headers", tmpTarget.CustomHeaders)
 
 	return nil
 }

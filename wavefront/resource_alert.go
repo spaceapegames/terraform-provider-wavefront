@@ -101,35 +101,25 @@ func resourceAlertCreate(d *schema.ResourceData, m interface{}) error {
 func resourceAlertRead(d *schema.ResourceData, m interface{}) error {
 	alerts := m.(*wavefrontClient).client.Alerts()
 
-	// search for an alert with our id. We should recieve 1 (Exact Match) or 0 (No Match)
-	results, err := alerts.Find(
-		[]*wavefront.SearchCondition{
-			{
-				Key:            "id",
-				Value:          d.Id(),
-				MatchingMethod: "EXACT",
-			},
-		})
+	alertID := d.Id()
+	tmpAlert := wavefront.Alert{ID: &alertID}
+	err := alerts.Get(&tmpAlert)
 	if err != nil {
-		return fmt.Errorf("Error finding Wavefront Alert %s. %s", d.Id(), err)
-	}
-	// resource has been deleted out of band. So unset ID
-	if len(results) != 1 {
 		d.SetId("")
-		return nil
+		return fmt.Errorf("Error finding Wavefront Alert %s. %s", d.Id(), err)
 	}
 
 	// Use the Wavefront ID as the Terraform ID
-	d.SetId(*results[0].ID)
-	d.Set("name", results[0].Name)
-	d.Set("target", results[0].Target)
-	d.Set("condition", results[0].Condition)
-	d.Set("additional_information", results[0].AdditionalInfo)
-	d.Set("display_expression", results[0].DisplayExpression)
-	d.Set("minutes", results[0].Minutes)
-	d.Set("resolve_after_minutes", results[0].ResolveAfterMinutes)
-	d.Set("severity", results[0].Severity)
-	d.Set("tags", results[0].Tags)
+	d.SetId(*tmpAlert.ID)
+	d.Set("name", tmpAlert.Name)
+	d.Set("target", tmpAlert.Target)
+	d.Set("condition", tmpAlert.Condition)
+	d.Set("additional_information", tmpAlert.AdditionalInfo)
+	d.Set("display_expression", tmpAlert.DisplayExpression)
+	d.Set("minutes", tmpAlert.Minutes)
+	d.Set("resolve_after_minutes", tmpAlert.ResolveAfterMinutes)
+	d.Set("severity", tmpAlert.Severity)
+	d.Set("tags", tmpAlert.Tags)
 
 	return nil
 }
@@ -137,14 +127,9 @@ func resourceAlertRead(d *schema.ResourceData, m interface{}) error {
 func resourceAlertUpdate(d *schema.ResourceData, m interface{}) error {
 	alerts := m.(*wavefrontClient).client.Alerts()
 
-	results, err := alerts.Find(
-		[]*wavefront.SearchCondition{
-			{
-				Key:            "id",
-				Value:          d.Id(),
-				MatchingMethod: "EXACT",
-			},
-		})
+	alertID := d.Id()
+	tmpAlert := wavefront.Alert{ID: &alertID}
+	err := alerts.Get(&tmpAlert)
 	if err != nil {
 		return fmt.Errorf("Error finding Wavefront Alert %s. %s", d.Id(), err)
 	}
@@ -154,7 +139,7 @@ func resourceAlertUpdate(d *schema.ResourceData, m interface{}) error {
 		tags = append(tags, tag.(string))
 	}
 
-	a := results[0]
+	a := tmpAlert
 	a.Name = d.Get("name").(string)
 	a.Target = d.Get("target").(string)
 	a.Condition = d.Get("condition").(string)
@@ -166,7 +151,7 @@ func resourceAlertUpdate(d *schema.ResourceData, m interface{}) error {
 	a.Tags = tags
 
 	// Update the alert on Wavefront
-	err = alerts.Update(a)
+	err = alerts.Update(&a)
 	if err != nil {
 		return fmt.Errorf("Error Updating Alert %s. %s", d.Get("name"), err)
 	}
@@ -176,21 +161,16 @@ func resourceAlertUpdate(d *schema.ResourceData, m interface{}) error {
 func resourceAlertDelete(d *schema.ResourceData, m interface{}) error {
 	alerts := m.(*wavefrontClient).client.Alerts()
 
-	results, err := alerts.Find(
-		[]*wavefront.SearchCondition{
-			&wavefront.SearchCondition{
-				Key:            "id",
-				Value:          d.Id(),
-				MatchingMethod: "EXACT",
-			},
-		})
+	alertID := d.Id()
+	tmpAlert := wavefront.Alert{ID: &alertID}
+	err := alerts.Get(&tmpAlert)
 	if err != nil {
 		return fmt.Errorf("Error finding Wavefront Alert %s. %s", d.Id(), err)
 	}
-	a := results[0]
+	a := tmpAlert
 
 	// Delete the Alert
-	err = alerts.Delete(a)
+	err = alerts.Delete(&a)
 	if err != nil {
 		return fmt.Errorf("Failed to delete Alert %s. %s", d.Id(), err)
 	}

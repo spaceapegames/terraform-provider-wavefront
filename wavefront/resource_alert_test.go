@@ -41,11 +41,17 @@ func TestAccWavefrontAlert_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"wavefront_alert.test_alert", "severity", "WARN"),
 					resource.TestCheckResourceAttr(
-						"wavefront_alert.test_alert", "tags.#", "2"),
+						"wavefront_alert.test_alert", "tags.#", "5"),
 					resource.TestCheckResourceAttr(
-						"wavefront_alert.test_alert", "tags.0", "terraform"),
+						"wavefront_alert.test_alert", "tags.0", "b"),
 					resource.TestCheckResourceAttr(
-						"wavefront_alert.test_alert", "tags.1", "test"),
+						"wavefront_alert.test_alert", "tags.1", "terraform"),
+					resource.TestCheckResourceAttr(
+						"wavefront_alert.test_alert", "tags.2", "c"),
+					resource.TestCheckResourceAttr(
+						"wavefront_alert.test_alert", "tags.3", "test"),
+					resource.TestCheckResourceAttr(
+						"wavefront_alert.test_alert", "tags.4", "a"),
 				),
 			},
 		},
@@ -151,8 +157,6 @@ func TestAccWavefrontAlert_RemoveOptionalAttribute(t *testing.T) {
 	})
 }
 
-//Fails due to Wavefront known issue - creating multiple tagged alerts causes a race condition. Only one will succeed.
-//Uncomment when that is fixed.
 func TestAccWavefrontAlert_Multiple(t *testing.T) {
 	var record wavefront.Alert
 
@@ -187,18 +191,10 @@ func testAccCheckWavefrontAlertDestroy(s *terraform.State) error {
 			continue
 		}
 
-		results, err := alerts.Find(
-			[]*wavefront.SearchCondition{
-				{
-					Key:            "id",
-					Value:          rs.Primary.ID,
-					MatchingMethod: "EXACT",
-				},
-			})
-		if err != nil {
-			return fmt.Errorf("Error finding Wavefront Alert. %s", err)
-		}
-		if len(results) > 0 {
+		tmpAlert := wavefront.Alert{ID: &rs.Primary.ID}
+
+		err := alerts.Get(&tmpAlert)
+		if err == nil {
 			return fmt.Errorf("Alert still exists")
 		}
 	}
@@ -263,27 +259,14 @@ func testAccCheckWavefrontAlertExists(n string, alert *wavefront.Alert) resource
 		}
 
 		alerts := testAccProvider.Meta().(*wavefrontClient).client.Alerts()
+		tmpAlert := wavefront.Alert{ID: &rs.Primary.ID}
 
-		results, err := alerts.Find(
-			[]*wavefront.SearchCondition{
-				{
-					Key:            "id",
-					Value:          rs.Primary.ID,
-					MatchingMethod: "EXACT",
-				},
-			})
+		err := alerts.Get(&tmpAlert)
 		if err != nil {
 			return fmt.Errorf("Error finding Wavefront Alert %s", err)
 		}
-		// resource has been deleted out of band. So unset ID
-		if len(results) != 1 {
-			return fmt.Errorf("No Alerts Found")
-		}
-		if *results[0].ID != rs.Primary.ID {
-			return fmt.Errorf("Alert not found")
-		}
 
-		*alert = *results[0]
+		*alert = tmpAlert
 
 		return nil
 	}
@@ -301,8 +284,11 @@ resource "wavefront_alert" "test_alert" {
   resolve_after_minutes = 5
   severity = "WARN"
   tags = [
+	"b",
     "terraform",
-    "test"
+    "c",
+    "test",
+    "a"
   ]
 }
 `)
