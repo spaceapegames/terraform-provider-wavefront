@@ -394,6 +394,7 @@ func buildDashboard(d *schema.ResourceData) (*wavefront.Dashboard, error) {
 		Tags:             tags,
 		Description:      d.Get("description").(string),
 		Url:              d.Get("url").(string),
+                DisplayQueryParameters: d.Get("display_query_parameters").(bool),
 		Sections:         *buildSections(&terraformSections),
 		ParameterDetails: *buildParameterDetails(&terraformParams),
 	}, nil
