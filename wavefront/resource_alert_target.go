@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/spaceapegames/go-wavefront"
+	"strings"
 )
 
 func resourceTarget() *schema.Resource {
@@ -18,44 +19,44 @@ func resourceTarget() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"name": &schema.Schema{
+			"name": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"description": &schema.Schema{
+			"description": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"triggers": &schema.Schema{
+			"triggers": {
 				Type:     schema.TypeList,
 				Required: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
-			"template": &schema.Schema{
+			"template": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
 			// 'method' must be EMAIL, WEBHOOK or PAGERDUTY
-			"method": &schema.Schema{
+			"method": {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-			"recipient": &schema.Schema{
+			"recipient": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
 			// EMAIL targets only
-			"email_subject": &schema.Schema{
+			"email_subject": {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
 			// WEBHOOK targets only
-			"content_type": &schema.Schema{
+			"content_type": {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
 			// WEBHOOK targets only
-			"custom_headers": &schema.Schema{
+			"custom_headers": {
 				Type:     schema.TypeMap,
 				Optional: true,
 			},
@@ -106,7 +107,11 @@ func resourceTargetRead(d *schema.ResourceData, m interface{}) error {
 	tmpTarget := wavefront.Target{ID: &targetID}
 	err := targets.Get(&tmpTarget)
 	if err != nil {
-		return fmt.Errorf("Error finding Wavefront Target %s. %s", d.Id(), err)
+		if strings.Contains(err.Error(), "404") {
+			d.SetId("")
+		} else {
+			return fmt.Errorf("error finding Wavefront Alert Target %s. %s", d.Id(), err)
+		}
 	}
 
 	// Use the Wavefront ID as the Terraform ID

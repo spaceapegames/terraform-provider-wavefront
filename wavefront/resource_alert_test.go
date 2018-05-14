@@ -42,16 +42,6 @@ func TestAccWavefrontAlert_Basic(t *testing.T) {
 						"wavefront_alert.test_alert", "severity", "WARN"),
 					resource.TestCheckResourceAttr(
 						"wavefront_alert.test_alert", "tags.#", "5"),
-					resource.TestCheckResourceAttr(
-						"wavefront_alert.test_alert", "tags.0", "b"),
-					resource.TestCheckResourceAttr(
-						"wavefront_alert.test_alert", "tags.1", "terraform"),
-					resource.TestCheckResourceAttr(
-						"wavefront_alert.test_alert", "tags.2", "c"),
-					resource.TestCheckResourceAttr(
-						"wavefront_alert.test_alert", "tags.3", "test"),
-					resource.TestCheckResourceAttr(
-						"wavefront_alert.test_alert", "tags.4", "a"),
 				),
 			},
 		},
@@ -87,10 +77,6 @@ func TestAccWavefrontAlert_RequiredAttributes(t *testing.T) {
 						"wavefront_alert.test_alert_required", "severity", "WARN"),
 					resource.TestCheckResourceAttr(
 						"wavefront_alert.test_alert_required", "tags.#", "2"),
-					resource.TestCheckResourceAttr(
-						"wavefront_alert.test_alert_required", "tags.0", "terraform"),
-					resource.TestCheckResourceAttr(
-						"wavefront_alert.test_alert_required", "tags.1", "test"),
 				),
 			},
 		},
@@ -228,7 +214,7 @@ func testAccCheckWavefrontAlertAttributesRemoved(alert *wavefront.Alert) resourc
 	return func(s *terraform.State) error {
 
 		if alert.ResolveAfterMinutes != 5 {
-			return fmt.Errorf("unexpected value for ResolveAfterMinutes %s, expected 5", alert.ResolveAfterMinutes)
+			return fmt.Errorf("unexpected value for ResolveAfterMinutes %v, expected 5", alert.ResolveAfterMinutes)
 		}
 
 		return nil
@@ -239,7 +225,7 @@ func testAccCheckWavefrontAlertAttributesRemovedUpdated(alert *wavefront.Alert) 
 	return func(s *terraform.State) error {
 
 		if alert.ResolveAfterMinutes != 0 {
-			return fmt.Errorf("unexpected value for ResolveAfterMinutes %s, expected 0", alert.ResolveAfterMinutes)
+			return fmt.Errorf("unexpected value for ResolveAfterMinutes %v, expected 0", alert.ResolveAfterMinutes)
 		}
 
 		return nil

@@ -5,6 +5,7 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/spaceapegames/go-wavefront"
 	"sort"
+	"strings"
 )
 
 // Terraform Resource Declaration
@@ -175,7 +176,7 @@ func resourceDashboard() *schema.Resource {
 			"section":           section,
 			"parameter_details": parameterDetail,
 			"tags": {
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				Required: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
@@ -200,12 +201,12 @@ func buildTerraformParameterDetail(wavefrontParamDetail wavefront.ParameterDetai
 }
 
 // Construct a Terraform Section
-func buildTerraformSection(wavefront_section wavefront.Section) map[string]interface{} {
+func buildTerraformSection(wavefrontSection wavefront.Section) map[string]interface{} {
 	section := map[string]interface{}{}
-	section["name"] = wavefront_section.Name
+	section["name"] = wavefrontSection.Name
 	rows := []map[string]interface{}{}
-	for _, wavefront_row := range wavefront_section.Rows {
-		rows = append(rows, buildTerraformRow(wavefront_row))
+	for _, wavefrontRow := range wavefrontSection.Rows {
+		rows = append(rows, buildTerraformRow(wavefrontRow))
 	}
 	section["row"] = rows
 
@@ -213,12 +214,12 @@ func buildTerraformSection(wavefront_section wavefront.Section) map[string]inter
 }
 
 // Construct a Wavefront Row
-func buildTerraformRow(wavefront_row wavefront.Row) map[string]interface{} {
+func buildTerraformRow(wavefrontRow wavefront.Row) map[string]interface{} {
 	row := map[string]interface{}{}
 
 	charts := []map[string]interface{}{}
-	for _, wavefront_row := range wavefront_row.Charts {
-		charts = append(charts, buildTerraformChart(wavefront_row))
+	for _, wavefrontRow := range wavefrontRow.Charts {
+		charts = append(charts, buildTerraformChart(wavefrontRow))
 	}
 	row["chart"] = charts
 
@@ -226,15 +227,15 @@ func buildTerraformRow(wavefront_row wavefront.Row) map[string]interface{} {
 }
 
 // Construct a Wavefront Chart
-func buildTerraformChart(wavefront_chart wavefront.Chart) map[string]interface{} {
+func buildTerraformChart(wavefrontChart wavefront.Chart) map[string]interface{} {
 	chart := map[string]interface{}{}
-	chart["name"] = wavefront_chart.Name
-	chart["description"] = wavefront_chart.Description
+	chart["name"] = wavefrontChart.Name
+	chart["description"] = wavefrontChart.Description
 
-	chart["units"] = wavefront_chart.Units
+	chart["units"] = wavefrontChart.Units
 	sources := []map[string]interface{}{}
-	for _, wavefront_source := range wavefront_chart.Sources {
-		sources = append(sources, buildTerraformSource(wavefront_source))
+	for _, wavefrontSource := range wavefrontChart.Sources {
+		sources = append(sources, buildTerraformSource(wavefrontSource))
 	}
 	chart["source"] = sources
 
@@ -242,14 +243,14 @@ func buildTerraformChart(wavefront_chart wavefront.Chart) map[string]interface{}
 }
 
 // Construct a Wavefront Source
-func buildTerraformSource(wavefront_source wavefront.Source) map[string]interface{} {
+func buildTerraformSource(wavefrontSource wavefront.Source) map[string]interface{} {
 	source := map[string]interface{}{}
-	source["name"] = wavefront_source.Name
-	source["query"] = wavefront_source.Query
-	source["disabled"] = wavefront_source.Disabled
-	source["scatter_plot_source"] = wavefront_source.ScatterPlotSource
-	source["query_builder_enabled"] = wavefront_source.QuerybuilderEnabled
-	source["source_description"] = wavefront_source.SourceDescription
+	source["name"] = wavefrontSource.Name
+	source["query"] = wavefrontSource.Query
+	source["disabled"] = wavefrontSource.Disabled
+	source["scatter_plot_source"] = wavefrontSource.ScatterPlotSource
+	source["query_builder_enabled"] = wavefrontSource.QuerybuilderEnabled
+	source["source_description"] = wavefrontSource.SourceDescription
 
 	return source
 }
@@ -258,8 +259,8 @@ func buildTerraformSource(wavefront_source wavefront.Source) map[string]interfac
 func buildSections(terraformSections *[]interface{}) *[]wavefront.Section {
 	wavefrontSections := make([]wavefront.Section, len(*terraformSections))
 
-	for i, t_ := range *terraformSections {
-		t := t_.(map[string]interface{})
+	for i, t := range *terraformSections {
+		t := t.(map[string]interface{})
 
 		terraformRows := t["row"].([]interface{})
 
@@ -275,8 +276,8 @@ func buildSections(terraformSections *[]interface{}) *[]wavefront.Section {
 func buildRows(terraformRows *[]interface{}) *[]wavefront.Row {
 	wavefrontRows := make([]wavefront.Row, len(*terraformRows))
 
-	for i, t_ := range *terraformRows {
-		t := t_.(map[string]interface{})
+	for i, t := range *terraformRows {
+		t := t.(map[string]interface{})
 
 		terraformCharts := t["chart"].([]interface{})
 
@@ -292,8 +293,8 @@ func buildRows(terraformRows *[]interface{}) *[]wavefront.Row {
 func buildCharts(terraformCharts *[]interface{}) *[]wavefront.Chart {
 	wavefrontCharts := make([]wavefront.Chart, len(*terraformCharts))
 
-	for i, t_ := range *terraformCharts {
-		t := t_.(map[string]interface{})
+	for i, t := range *terraformCharts {
+		t := t.(map[string]interface{})
 
 		terraformSources := t["source"].([]interface{})
 
@@ -309,11 +310,11 @@ func buildCharts(terraformCharts *[]interface{}) *[]wavefront.Chart {
 }
 
 // Construct a Wavefront Source
-func buildSources(terrafromSources *[]interface{}) *[]wavefront.Source {
-	wavefrontSources := make([]wavefront.Source, len(*terrafromSources))
+func buildSources(terraformSources *[]interface{}) *[]wavefront.Source {
+	wavefrontSources := make([]wavefront.Source, len(*terraformSources))
 
-	for i, t_ := range *terrafromSources {
-		t := t_.(map[string]interface{})
+	for i, t := range *terraformSources {
+		t := t.(map[string]interface{})
 
 		wavefrontSources[i] = wavefront.Source{
 			Name:  t["name"].(string),
@@ -340,8 +341,8 @@ func buildSources(terrafromSources *[]interface{}) *[]wavefront.Source {
 func buildParameterDetails(terraformParams *[]interface{}) *map[string]wavefront.ParameterDetail {
 	wavefrontParams := map[string]wavefront.ParameterDetail{}
 
-	for _, t_ := range *terraformParams {
-		t := t_.(map[string]interface{})
+	for _, t := range *terraformParams {
+		t := t.(map[string]interface{})
 		name := t["name"].(string)
 		valuesToReadableStrings := t["values_to_readable_strings"].(map[string]interface{})
 		readableStrings := map[string]string{}
@@ -377,7 +378,7 @@ func buildParameterDetails(terraformParams *[]interface{}) *map[string]wavefront
 func buildDashboard(d *schema.ResourceData) (*wavefront.Dashboard, error) {
 
 	var tags []string
-	for _, tag := range d.Get("tags").([]interface{}) {
+	for _, tag := range d.Get("tags").(*schema.Set).List() {
 		tags = append(tags, tag.(string))
 	}
 
@@ -400,12 +401,12 @@ func resourceDashboardCreate(d *schema.ResourceData, m interface{}) error {
 	dashboards := m.(*wavefrontClient).client.Dashboards()
 	dashboard, err := buildDashboard(d)
 	if err != nil {
-		return fmt.Errorf("Failed to parse dashboard, %s", err)
+		return fmt.Errorf("failed to parse dashboard, %s", err)
 	}
 
 	err = dashboards.Create(dashboard)
 	if err != nil {
-		return fmt.Errorf("Failed to create dashboard, %s", err)
+		return fmt.Errorf("failed to create dashboard, %s", err)
 	}
 	d.SetId(dashboard.ID)
 
@@ -430,8 +431,11 @@ func resourceDashboardRead(d *schema.ResourceData, m interface{}) error {
 	// search for an dashboard with our id. We should receive 1 (Exact Match) or 0 (No Match)
 	err := dashboards.Get(&dash)
 	if err != nil {
-		// dashboard no longer exists
-		d.SetId("")
+		if strings.Contains(err.Error(), "404") {
+			d.SetId("")
+		} else {
+			return fmt.Errorf("error finding Wavefront Dashboard %s. %s", d.Id(), err)
+		}
 	}
 
 	// Use the Wavefront url as the Terraform ID
@@ -465,13 +469,13 @@ func resourceDashboardUpdate(d *schema.ResourceData, m interface{}) error {
 
 	a, err := buildDashboard(d)
 	if err != nil {
-		return fmt.Errorf("Failed to parse dashboard, %s", err)
+		return fmt.Errorf("failed to parse dashboard, %s", err)
 	}
 
 	// Update the dashboard on Wavefront
 	err = dashboards.Update(a)
 	if err != nil {
-		return fmt.Errorf("Error Updating Dashboard %s. %s", d.Get("name"), err)
+		return fmt.Errorf("error Updating Dashboard %s. %s", d.Get("name"), err)
 	}
 	return nil
 }
@@ -484,13 +488,13 @@ func resourceDashboardDelete(d *schema.ResourceData, m interface{}) error {
 
 	err := dashboards.Get(&dash)
 	if err != nil {
-		return fmt.Errorf("Error finding Wavefront Dashboard %s. %s", d.Id(), err)
+		return fmt.Errorf("error finding Wavefront Dashboard %s. %s", d.Id(), err)
 	}
 
-	// Delete the Dashbaord
+	// Delete the Dashboard
 	err = dashboards.Delete(&dash)
 	if err != nil {
-		return fmt.Errorf("Failed to delete Dashboard %s. %s", d.Id(), err)
+		return fmt.Errorf("failed to delete Dashboard %s. %s", d.Id(), err)
 	}
 	d.SetId("")
 	return nil
