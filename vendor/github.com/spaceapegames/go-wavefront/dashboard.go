@@ -20,6 +20,9 @@ type Dashboard struct {
 	// Description is a description given to the Dashboard
 	Description string `json:"description"`
 
+	// Enable/Disable view of variables on dashboard
+	DisplayQueryParameters bool `json:"displayQueryParameters"`
+
 	// Url is the relative url to access the dashboard by on a cluster
 	Url string `json:"url"`
 

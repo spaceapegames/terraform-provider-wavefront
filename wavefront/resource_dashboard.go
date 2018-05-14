@@ -173,6 +173,10 @@ func resourceDashboard() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
+			"display_query_parameters": {
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
 			"section":           section,
 			"parameter_details": parameterDetail,
 			"tags": {
@@ -391,6 +395,7 @@ func buildDashboard(d *schema.ResourceData) (*wavefront.Dashboard, error) {
 		Tags:             tags,
 		Description:      d.Get("description").(string),
 		Url:              d.Get("url").(string),
+		DisplayQueryParameters: d.Get("display_query_parameters").(bool),
 		Sections:         *buildSections(&terraformSections),
 		ParameterDetails: *buildParameterDetails(&terraformParams),
 	}, nil
@@ -443,6 +448,7 @@ func resourceDashboardRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("name", dash.Name)
 	d.Set("description", dash.Description)
 	d.Set("url", dash.Url)
+	d.Set("display_query_parameters", dash.DisplayQueryParameters)
 
 	sections := []map[string]interface{}{}
 	for _, wavefrontSection := range dash.Sections {
