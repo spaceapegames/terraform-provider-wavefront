@@ -19,43 +19,43 @@ func resourceAlert() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"name": &schema.Schema{
+			"name": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"target": &schema.Schema{
+			"target": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"condition": &schema.Schema{
+			"condition": {
 				Type:      schema.TypeString,
 				Required:  true,
 				StateFunc: trimSpaces,
 			},
-			"additional_information": &schema.Schema{
+			"additional_information": {
 				Type:      schema.TypeString,
 				Optional:  true,
 				StateFunc: trimSpaces,
 			},
-			"display_expression": &schema.Schema{
+			"display_expression": {
 				Type:      schema.TypeString,
 				Optional:  true,
 				StateFunc: trimSpaces,
 			},
-			"minutes": &schema.Schema{
+			"minutes": {
 				Type:     schema.TypeInt,
 				Required: true,
 			},
-			"resolve_after_minutes": &schema.Schema{
+			"resolve_after_minutes": {
 				Type:     schema.TypeInt,
 				Optional: true,
 			},
-			"severity": &schema.Schema{
+			"severity": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"tags": &schema.Schema{
-				Type:     schema.TypeList,
+			"tags": {
+				Type:     schema.TypeSet,
 				Required: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 			},
@@ -71,7 +71,7 @@ func resourceAlertCreate(d *schema.ResourceData, m interface{}) error {
 	alerts := m.(*wavefrontClient).client.Alerts()
 
 	var tags []string
-	for _, tag := range d.Get("tags").([]interface{}) {
+	for _, tag := range d.Get("tags").(*schema.Set).List() {
 		tags = append(tags, tag.(string))
 	}
 
@@ -90,7 +90,7 @@ func resourceAlertCreate(d *schema.ResourceData, m interface{}) error {
 	// Create the alert on Wavefront
 	err := alerts.Create(a)
 	if err != nil {
-		return fmt.Errorf("Error Creating Alert %s. %s", d.Get("name"), err)
+		return fmt.Errorf("error creating Alert %s. %s", d.Get("name"), err)
 	}
 
 	d.SetId(*a.ID)
@@ -105,8 +105,11 @@ func resourceAlertRead(d *schema.ResourceData, m interface{}) error {
 	tmpAlert := wavefront.Alert{ID: &alertID}
 	err := alerts.Get(&tmpAlert)
 	if err != nil {
-		d.SetId("")
-		return fmt.Errorf("Error finding Wavefront Alert %s. %s", d.Id(), err)
+		if strings.Contains(err.Error(), "404") {
+			d.SetId("")
+		} else {
+			return fmt.Errorf("error finding Wavefront Alert %s. %s", d.Id(), err)
+		}
 	}
 
 	// Use the Wavefront ID as the Terraform ID
@@ -130,12 +133,13 @@ func resourceAlertUpdate(d *schema.ResourceData, m interface{}) error {
 	alertID := d.Id()
 	tmpAlert := wavefront.Alert{ID: &alertID}
 	err := alerts.Get(&tmpAlert)
+
 	if err != nil {
 		return fmt.Errorf("Error finding Wavefront Alert %s. %s", d.Id(), err)
 	}
 
 	var tags []string
-	for _, tag := range d.Get("tags").([]interface{}) {
+	for _, tag := range d.Get("tags").(*schema.Set).List() {
 		tags = append(tags, tag.(string))
 	}
 

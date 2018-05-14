@@ -308,16 +308,6 @@ func TestAccWavefrontDashboard_Basic(t *testing.T) {
 						"wavefront_dashboard.test_dashboard", "parameter_details.0.values_to_readable_strings.%", "1"),
 					resource.TestCheckResourceAttr(
 						"wavefront_dashboard.test_dashboard", "parameter_details.0.values_to_readable_strings.Label", "test"),
-					resource.TestCheckResourceAttr(
-						"wavefront_dashboard.test_dashboard", "tags.#", "4"),
-					resource.TestCheckResourceAttr(
-						"wavefront_dashboard.test_dashboard", "tags.0", "b"),
-					resource.TestCheckResourceAttr(
-						"wavefront_dashboard.test_dashboard", "tags.1", "terraform"),
-					resource.TestCheckResourceAttr(
-						"wavefront_dashboard.test_dashboard", "tags.2", "a"),
-					resource.TestCheckResourceAttr(
-						"wavefront_dashboard.test_dashboard", "tags.3", "test"),
 				),
 			},
 		},
