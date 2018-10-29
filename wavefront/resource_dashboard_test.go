@@ -177,12 +177,20 @@ func TestBuildCharts(t *testing.T) {
 	chart0["name"] = "chart 0"
 	chart0["description"] = "desc"
 	chart0["units"] = "unit"
+	chart0["summarization"] = "MEAN"
+	chart0["include_obsolete_metrics"] = false
+	chart0["interpolate_points"] = false
+	chart0["no_default_events"] = false
 	chart0["source"] = []interface{}{}
 
 	chart1 := make(map[string]interface{})
 	chart1["name"] = "chart 1"
 	chart1["description"] = "desc"
 	chart1["units"] = "unit"
+	chart1["summarization"] = "MEAN"
+	chart1["include_obsolete_metrics"] = false
+	chart1["interpolate_points"] = false
+	chart1["no_default_events"] = false
 	chart1["source"] = []interface{}{}
 
 	charts := []interface{}{
@@ -308,6 +316,103 @@ func TestAccWavefrontDashboard_Basic(t *testing.T) {
 						"wavefront_dashboard.test_dashboard", "parameter_details.0.values_to_readable_strings.%", "1"),
 					resource.TestCheckResourceAttr(
 						"wavefront_dashboard.test_dashboard", "parameter_details.0.values_to_readable_strings.Label", "test"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccWavefrontDashboard_All(t *testing.T) {
+	var record wavefront.Dashboard
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckWavefrontDashboardDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckWavefrontDashboard_all(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckWavefrontDashboardExists("wavefront_dashboard.test_dashboard", &record),
+					testAccCheckWavefrontDashboardAttributes(&record),
+
+					// Check against state that the attributes are as we expect
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.test_dashboard", "name", "Terraform Test Dashboard"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.test_dashboard", "description", "testing, testing"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.test_dashboard", "url", "tftestcreate"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.test_dashboard", "section.#", "1"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.test_dashboard", "section.0.name", "section 1"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.test_dashboard", "section.0.row.#", "1"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.test_dashboard", "section.0.row.0.chart.#", "1"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.test_dashboard", "section.0.row.0.chart.0.description", "chart number 1"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.test_dashboard", "section.0.row.0.chart.0.name", "chart 1"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.test_dashboard", "section.0.row.0.chart.0.units", "something per unit"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.test_dashboard", "section.0.row.0.chart.0.summarization", "MEAN"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.test_dashboard", "section.0.row.0.chart.0.base", "0"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.test_dashboard", "section.0.row.0.chart.0.include_obsolete_metrics", "false"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.test_dashboard", "section.0.row.0.chart.0.interpolate_points", "true"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.test_dashboard", "section.0.row.0.chart.0.no_default_events", "true"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.test_dashboard", "section.0.row.0.chart.0.source.0.name", "source name"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.test_dashboard", "section.0.row.0.chart.0.source.0.query", "ts()"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.test_dashboard", "parameter_details.0.default_value", "Label"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.test_dashboard", "parameter_details.#", "1"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.test_dashboard", "parameter_details.0.hide_from_view", "false"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.test_dashboard", "parameter_details.0.label", "param1"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.test_dashboard", "parameter_details.0.name", "param1"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.test_dashboard", "parameter_details.0.parameter_type", "SIMPLE"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.test_dashboard", "parameter_details.0.values_to_readable_strings.%", "1"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.test_dashboard", "parameter_details.0.values_to_readable_strings.Label", "test"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.test_dashboard", "chart_title_bg_color", "black"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.test_dashboard", "chart_title_color", "white"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.test_dashboard", "chart_title_scalar", "0"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.test_dashboard", "default_end_time", "1"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.test_dashboard", "default_start_time", "0"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.test_dashboard", "default_time_window", "test"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.test_dashboard", "display_description", "true"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.test_dashboard", "display_query_parameters", "true"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.test_dashboard", "display_section_table_of_contents", "true"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.test_dashboard", "event_filter_type", "NONE"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.test_dashboard", "event_query", "test"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.test_dashboard", "favorite", "false"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.test_dashboard", "section.0.row.0.chart.chart_settings.show_hosts", "true"),
 				),
 			},
 		},
@@ -649,6 +754,66 @@ resource "wavefront_dashboard" "test_dashboard" {
     "a",
     "test"
   ]
+}
+`)
+}
+
+func testAccCheckWavefrontDashboard_all() string {
+	return fmt.Sprintf(`
+resource "wavefront_dashboard" "test_dashboard" {
+  name = "Terraform Test Dashboard"
+  description = "testing, testing"
+  url = "tftestcreate"
+  section {
+    name = "section 1"
+    row {
+      chart {
+        name = "chart 1"
+        description = "chart number 1"
+        units = "something per unit"
+        summarization = "MEAN"
+        base = 0
+        include_obsolete_metrics = false
+        interpolate_points = true
+        no_default_events = true
+        source {
+          name = "source name"
+          query = "ts()"
+        }
+        chart_settings {
+          max = 1.1
+        }
+      }
+    }
+  }
+  parameter_details {
+    name = "param1"
+    label = "param1"
+    default_value = "Label"
+    hide_from_view = false
+    parameter_type = "SIMPLE"
+	values_to_readable_strings = {
+		Label = "test"
+	}
+  }
+  tags = [
+    "b",
+    "terraform",
+    "a",
+    "test"
+  ]
+  chart_title_bg_color = "black"
+  chart_title_color = "white"
+  chart_title_scalar = 0
+  default_end_time = 1
+  default_start_time = 0
+  default_time_window = "test"
+  display_description = true
+  display_query_parameters = true
+  display_section_table_of_contents = true
+  event_filter_type = "NONE"
+  event_query = "test"
+  favorite = false
 }
 `)
 }

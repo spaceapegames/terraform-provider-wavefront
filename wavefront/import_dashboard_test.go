@@ -38,6 +38,7 @@ resource "wavefront_dashboard" "foobar" {
   name        = "Terraform Test Dashboard"
   description = "a"
   url         = "tftestimport"
+  event_filter_type = "BYCHART"
 
   section {
     name = "section 1"
