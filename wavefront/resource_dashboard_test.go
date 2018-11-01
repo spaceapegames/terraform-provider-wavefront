@@ -134,6 +134,43 @@ func TestBuildTerraformChart(t *testing.T) {
 	}
 }
 
+func TestBuildTerraformChartSettings(t *testing.T) {
+	chartSettings := wavefront.ChartSetting{
+		Type:     "line",
+		LineType: "linear",
+	}
+	result := buildTerraformChartSettings(chartSettings)
+	if result["type"] != chartSettings.Type {
+		t.Errorf("Expected %s, got %s", chartSettings.Type, result["type"])
+	}
+	if result["line_type"] != chartSettings.LineType {
+		t.Errorf("Expected %s, got %s", chartSettings.LineType, result["line_type"])
+	}
+}
+
+func TestBuildChartSettings(t *testing.T) {
+	settings0 := make(map[string]interface{})
+	settings0["type"] = "line"
+	settings0["line_type"] = "linear"
+	settings := []interface{}{
+		settings0,
+	}
+
+	result := buildChartSettings(&settings)
+
+	if result == nil {
+		t.Errorf("Expected chart settings for %v", settings)
+	}
+
+	if result.Type != settings0["type"] {
+		t.Errorf("Expected chart type %s, got %v", settings0["type"], result.Type)
+	}
+
+	if result.LineType != settings0["line_type"] {
+		t.Errorf("Expected line type %s, got %v", settings0["line_type"], result.LineType)
+	}
+}
+
 func TestBuildSections(t *testing.T) {
 	section0 := make(map[string]interface{})
 	section0["name"] = "section 0"
@@ -178,12 +215,24 @@ func TestBuildCharts(t *testing.T) {
 	chart0["description"] = "desc"
 	chart0["units"] = "unit"
 	chart0["source"] = []interface{}{}
+	chart0["summarization"] = "MEAN"
+	chart0["chart_setting"] = []interface{}{
+		map[string]interface{}{
+			"type": "linear",
+		},
+	}
 
 	chart1 := make(map[string]interface{})
 	chart1["name"] = "chart 1"
 	chart1["description"] = "desc"
 	chart1["units"] = "unit"
 	chart1["source"] = []interface{}{}
+	chart1["summarization"] = "MEAN"
+	chart1["chart_setting"] = []interface{}{
+		map[string]interface{}{
+			"type": "linear",
+		},
+	}
 
 	charts := []interface{}{
 		chart0,
@@ -536,6 +585,319 @@ func TestAccWavefrontDashboard_DynamicMatchingSourceTagParam(t *testing.T) {
 	})
 }
 
+func TestAccWavefrontDashboard_Linear_ChartSettings(t *testing.T) {
+	var record wavefront.Dashboard
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckWavefrontDashboardDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckWavefrontDashboard_Linear_ChartSettings(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckWavefrontDashboardExists("wavefront_dashboard.chart_settings_dash", &record),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.name", "chart 1"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.#", "1"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.auto_column_tags", "false"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.column_tags", "deprecated"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.custom_tags.#", "2"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.expected_data_spacing", "120"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.fixed_legend_display_stats.#", "2"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.fixed_legend_enabled", "true"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.fixed_legend_filter_field", "CURRENT"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.fixed_legend_filter_limit", "1"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.fixed_legend_filter_sort", "TOP"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.fixed_legend_hide_label", "false"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.fixed_legend_position", "RIGHT"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.fixed_legend_use_raw_stats", "true"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.invert_dynamic_legend_hover_control", "true"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.line_type", "linear"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.max", "100"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.min", "0"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.type", "line"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.y0_scale_si_by_1024", "true"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.y0_unit_autoscaling", "true"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.y1max", "100"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.y1_scale_si_by_1024", "true"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.y1_unit_autoscaling", "true"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.y1_units", "units"),
+				),
+			},
+		},
+	})
+}
+func TestAccWavefrontDashboard_Table_ChartSettings(t *testing.T) {
+	var record wavefront.Dashboard
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckWavefrontDashboardDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckWavefrontDashboard_Table_ChartSettings(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckWavefrontDashboardExists("wavefront_dashboard.chart_settings_dash", &record),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.name", "chart 1"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.#", "1"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.auto_column_tags", "false"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.column_tags", "deprecated"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.custom_tags.#", "2"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.expected_data_spacing", "120"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.fixed_legend_display_stats.#", "2"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.fixed_legend_enabled", "true"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.fixed_legend_filter_field", "CURRENT"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.fixed_legend_filter_limit", "1"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.fixed_legend_filter_sort", "TOP"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.fixed_legend_hide_label", "false"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.fixed_legend_position", "RIGHT"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.fixed_legend_use_raw_stats", "true"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.group_by_source", "true"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.line_type", "linear"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.num_tags", "2"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.show_hosts", "false"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.show_labels", "false"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.show_raw_values", "false"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.sort_values_descending", "true"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.tag_mode", "all"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.type", "table"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.windowing", "full"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.window_size", "10"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.y0_scale_si_by_1024", "true"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.y0_unit_autoscaling", "true"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.y1max", "100"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.y1_scale_si_by_1024", "true"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.y1_unit_autoscaling", "true"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.y1_units", "units"),
+				),
+			},
+		},
+	})
+}
+func TestAccWavefrontDashboard_Sparkline_ChartSettings(t *testing.T) {
+	var record wavefront.Dashboard
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckWavefrontDashboardDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckWavefrontDashboard_Sparkline_ChartSettings(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckWavefrontDashboardExists("wavefront_dashboard.chart_settings_dash", &record),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.name", "chart 1"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.#", "1"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.auto_column_tags", "false"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.column_tags", "deprecated"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.custom_tags.#", "2"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.expected_data_spacing", "120"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.fixed_legend_display_stats.#", "2"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.fixed_legend_enabled", "true"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.fixed_legend_filter_field", "CURRENT"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.fixed_legend_filter_limit", "1"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.fixed_legend_filter_sort", "TOP"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.fixed_legend_hide_label", "false"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.fixed_legend_position", "RIGHT"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.fixed_legend_use_raw_stats", "true"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.line_type", "linear"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.max", "100"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.min", "0"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.sparkline_decimal_precision", "1"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.sparkline_display_color", "rgba(1,1,1,1)"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.sparkline_display_font_size", "14"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.sparkline_display_horizontal_position", "LEFT"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.sparkline_display_postfix", "postfix"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.sparkline_display_prefix", "prefix"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.sparkline_display_value_type", "VALUE"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.sparkline_display_vertical_position", "deprecated"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.sparkline_fill_color", "rgba(1,1,1,1)"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.sparkline_line_color", "rgba(1,1,1,1)"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.sparkline_size", "BOTTOM"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.sparkline_value_color_map_colors.#", "3"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.sparkline_value_color_map_apply_to", "TEXT"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.sparkline_value_color_map_values.#", "2"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.sparkline_value_text_map_text.#", "1"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.type", "line"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.y0_scale_si_by_1024", "true"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.y0_unit_autoscaling", "true"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.y1max", "100"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.y1_scale_si_by_1024", "true"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.y1_unit_autoscaling", "true"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.y1_units", "units"),
+				),
+			},
+		},
+	})
+}
+func TestAccWavefrontDashboard_Markdown_ChartSettings(t *testing.T) {
+	var record wavefront.Dashboard
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckWavefrontDashboardDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckWavefrontDashboard_Markdown_ChartSettings(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckWavefrontDashboardExists("wavefront_dashboard.chart_settings_dash", &record),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.name", "chart 1"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.#", "1"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.auto_column_tags", "false"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.column_tags", "deprecated"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.custom_tags.#", "2"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.fixed_legend_display_stats.#", "2"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.fixed_legend_enabled", "true"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.fixed_legend_filter_field", "CURRENT"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.fixed_legend_filter_limit", "1"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.fixed_legend_filter_sort", "TOP"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.fixed_legend_hide_label", "false"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.fixed_legend_position", "RIGHT"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.fixed_legend_use_raw_stats", "true"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.num_tags", "2"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.plain_markdown_content", "markdown content"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.tag_mode", "all"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.type", "markdown-widget"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.windowing", "full"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.window_size", "10"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.max", "100"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.min", "0"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.y0_scale_si_by_1024", "true"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.y0_unit_autoscaling", "true"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.y1max", "100"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.y1_scale_si_by_1024", "true"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.y1_unit_autoscaling", "true"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.chart_settings_dash", "section.0.row.0.chart.0.chart_setting.0.y1_units", "units"),
+				),
+			},
+		},
+	})
+}
+
 func testAccCheckWavefrontDashboardDestroy(s *terraform.State) error {
 
 	dashboards := testAccProvider.Meta().(*wavefrontClient).client.Dashboards()
@@ -589,7 +951,6 @@ func testAccCheckWavefrontDashboardAttributesUpdated(dashboard *wavefront.Dashbo
 func testAccCheckWavefrontDashboardExists(n string, dashboard *wavefront.Dashboard) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
-
 		if !ok {
 			return fmt.Errorf("Not found: %s", n)
 		}
@@ -607,7 +968,6 @@ func testAccCheckWavefrontDashboardExists(n string, dashboard *wavefront.Dashboa
 		if err != nil {
 			return fmt.Errorf("Did not find Dashboard with id %s, %s", rs.Primary.ID, err)
 		}
-
 		*dashboard = dash
 		return nil
 	}
@@ -630,6 +990,10 @@ resource "wavefront_dashboard" "test_dashboard" {
           name = "source name"
           query = "ts()"
         }
+        chart_setting {
+          type = "linear"
+        }
+        summarization = "MEAN"
       }
     }
   }
@@ -670,6 +1034,10 @@ resource "wavefront_dashboard" "test_dashboard" {
           name = "source name"
           query = "ts()"
         }
+        chart_setting {
+          type = "linear"
+        }
+        summarization = "MEAN"
       }
     }
   }
@@ -710,6 +1078,10 @@ resource "wavefront_dashboard" "test_dashboarda" {
           name = "source name"
           query = "ts()"
         }
+        chart_setting {
+          type = "linear"
+        }
+        summarization = "MEAN"
       }
     }
   }
@@ -743,6 +1115,10 @@ resource "wavefront_dashboard" "test_dashboardb" {
           name = "source name"
           query = "ts()"
         }
+        chart_setting {
+          type = "linear"
+        }
+        summarization = "MEAN"
       }
     }
   }
@@ -776,6 +1152,10 @@ resource "wavefront_dashboard" "test_dashboardc" {
           name = "source name"
           query = "ts()"
         }
+        chart_setting {
+          type = "linear"
+        }
+        summarization = "MEAN"
       }
     }
   }
@@ -814,6 +1194,10 @@ resource "wavefront_dashboard" "list_param_dash" {
           name = "source name"
           query = "ts()"
         }
+        chart_setting {
+          type = "linear"
+        }
+        summarization = "MEAN"
       }
     }
   }
@@ -884,6 +1268,10 @@ resource "wavefront_dashboard" "dynamic_source_param_dash" {
           name = "source name"
           query = "ts()"
         }
+        chart_setting {
+          type = "linear"
+        }
+        summarization = "MEAN"
       }
     }
   }
@@ -924,6 +1312,10 @@ resource "wavefront_dashboard" "dynamic_source_param_dash" {
           name = "source name"
           query = "ts()"
         }
+        chart_setting {
+          type = "linear"
+        }
+        summarization = "MEAN"
       }
     }
   }
@@ -964,6 +1356,10 @@ resource "wavefront_dashboard" "dynamic_source_param_dash" {
           name = "source name"
           query = "ts()"
         }
+        chart_setting {
+          type = "linear"
+        }
+        summarization = "MEAN"
       }
     }
   }
@@ -1004,6 +1400,10 @@ resource "wavefront_dashboard" "dynamic_source_param_dash" {
           name = "source name"
           query = "ts()"
         }
+        chart_setting {
+          type = "linear"
+        }
+        summarization = "MEAN"
       }
     }
   }
@@ -1044,6 +1444,296 @@ resource "wavefront_dashboard" "dynamic_source_param_dash" {
         source {
           name = "source name"
           query = "ts()"
+        }
+        chart_setting {
+          type = "linear"
+        }
+        summarization = "MEAN"
+      }
+    }
+  }
+  parameter_details {
+    name = "param1"
+    label = "param1"
+    default_value = "defaultQuery"
+    hide_from_view = false
+    parameter_type = "DYNAMIC"
+    values_to_readable_strings = {
+      defaultQuery = "dev-elasticsearch"
+    }
+    dynamic_field_type = "MATCHING_SOURCE_TAG"
+    query_value = "ts(aws.ec2.diskwritebytes.average)"
+  }
+  tags = [
+    "terraform",
+    "test"
+  ]
+}
+`)
+}
+
+func testAccCheckWavefrontDashboard_Linear_ChartSettings() string {
+	return fmt.Sprintf(`
+resource "wavefront_dashboard" "chart_settings_dash" {
+  name = "Terraform Chart Settings"
+  description = "testing, testing"
+  url = "tftestcreate"
+  section {
+    name = "section 1"
+    row {
+      chart {
+        name = "chart 1"
+        description = "chart number 1"
+        units = "something per unit"
+        source {
+          name = "source name"
+          query = "ts()"
+        }
+        summarization = "MEAN"
+        chart_setting {
+          auto_column_tags = false
+          column_tags = "deprecated"
+          custom_tags = ["tag1", "tag2"]
+          expected_data_spacing = 120
+          fixed_legend_display_stats = ["stat1", "stat2"]
+          fixed_legend_enabled = true
+          fixed_legend_filter_field = "CURRENT"
+          fixed_legend_filter_limit = 1
+          fixed_legend_filter_sort = "TOP"
+          fixed_legend_hide_label = false
+          fixed_legend_position = "RIGHT"
+          fixed_legend_use_raw_stats = true
+          invert_dynamic_legend_hover_control = true
+          line_type = "linear"
+          max = 100
+          min = 0
+          type = "line"
+          y0_scale_si_by_1024 = true
+          y0_unit_autoscaling = true
+          y1max = 100
+          y1_scale_si_by_1024 = true
+          y1_unit_autoscaling = true
+          y1_units = "units"
+        }
+      }
+    }
+  }
+  parameter_details {
+    name = "param1"
+    label = "param1"
+    default_value = "defaultQuery"
+    hide_from_view = false
+    parameter_type = "DYNAMIC"
+    values_to_readable_strings = {
+      defaultQuery = "dev-elasticsearch"
+    }
+    dynamic_field_type = "MATCHING_SOURCE_TAG"
+    query_value = "ts(aws.ec2.diskwritebytes.average)"
+  }
+  tags = [
+    "terraform",
+    "test"
+  ]
+}
+`)
+}
+func testAccCheckWavefrontDashboard_Table_ChartSettings() string {
+	return fmt.Sprintf(`
+resource "wavefront_dashboard" "chart_settings_dash" {
+  name = "Terraform Chart Settings"
+  description = "testing, testing"
+  url = "tftestcreate"
+  section {
+    name = "section 1"
+    row {
+      chart {
+        name = "chart 1"
+        description = "chart number 1"
+        units = "something per unit"
+        source {
+          name = "source name"
+          query = "ts()"
+        }
+        summarization = "MEAN"
+        chart_setting {
+          auto_column_tags = false
+          column_tags = "deprecated"
+          custom_tags = ["tag1", "tag2"]
+          expected_data_spacing = 120
+          fixed_legend_display_stats = ["stat1", "stat2"]
+          fixed_legend_enabled = true
+          fixed_legend_filter_field = "CURRENT"
+          fixed_legend_filter_limit = 1
+          fixed_legend_filter_sort = "TOP"
+          fixed_legend_hide_label = false
+          fixed_legend_position = "RIGHT"
+          fixed_legend_use_raw_stats = true
+          group_by_source = true
+          line_type = "linear"
+          num_tags = 2
+          show_hosts = false
+          show_labels = false
+          show_raw_values = false
+          sort_values_descending = true
+          tag_mode = "all"
+          type = "table"
+          windowing = "full"
+          window_size = 10
+          y0_scale_si_by_1024 = true
+          y0_unit_autoscaling = true
+          y1max = 100
+          y1_scale_si_by_1024 = true
+          y1_unit_autoscaling = true
+          y1_units = "units"
+        }
+      }
+    }
+  }
+  parameter_details {
+    name = "param1"
+    label = "param1"
+    default_value = "defaultQuery"
+    hide_from_view = false
+    parameter_type = "DYNAMIC"
+    values_to_readable_strings = {
+      defaultQuery = "dev-elasticsearch"
+    }
+    dynamic_field_type = "MATCHING_SOURCE_TAG"
+    query_value = "ts(aws.ec2.diskwritebytes.average)"
+  }
+  tags = [
+    "terraform",
+    "test"
+  ]
+}
+`)
+}
+func testAccCheckWavefrontDashboard_Sparkline_ChartSettings() string {
+	return fmt.Sprintf(`
+resource "wavefront_dashboard" "chart_settings_dash" {
+  name = "Terraform Chart Settings"
+  description = "testing, testing"
+  url = "tftestcreate"
+  section {
+    name = "section 1"
+    row {
+      chart {
+        name = "chart 1"
+        description = "chart number 1"
+        units = "something per unit"
+        source {
+          name = "source name"
+          query = "ts()"
+        }
+        summarization = "MEAN"
+        chart_setting {
+          auto_column_tags = false
+          column_tags = "deprecated"
+          custom_tags = ["tag1", "tag2"]
+          expected_data_spacing = 120
+          fixed_legend_display_stats = ["stat1", "stat2"]
+          fixed_legend_enabled = true
+          fixed_legend_filter_field = "CURRENT"
+          fixed_legend_filter_limit = 1
+          fixed_legend_filter_sort = "TOP"
+          fixed_legend_hide_label = false
+          fixed_legend_position = "RIGHT"
+          fixed_legend_use_raw_stats = true
+          line_type = "linear"
+          max = 100
+          min = 0
+          sparkline_decimal_precision = 1
+          sparkline_display_color = "rgba(1,1,1,1)"
+          sparkline_display_font_size = 14
+          sparkline_display_horizontal_position = "LEFT"
+          sparkline_display_postfix = "postfix"
+          sparkline_display_prefix = "prefix"
+          sparkline_display_value_type = "VALUE"
+          sparkline_display_vertical_position = "deprecated"
+          sparkline_fill_color = "rgba(1,1,1,1)"
+          sparkline_line_color = "rgba(1,1,1,1)"
+          sparkline_size = "BOTTOM"
+          sparkline_value_color_map_apply_to = "TEXT"
+          sparkline_value_color_map_colors = ["rgba(1,1,1,1)", "rgba(2,2,2,2)", "rgba(3,3,3,3)"]
+          sparkline_value_color_map_values = [ 1, 2 ]
+          sparkline_value_text_map_text = ["a"]
+          sparkline_value_text_map_thresholds = [1]
+          type = "line"
+          y0_scale_si_by_1024 = true
+          y0_unit_autoscaling = true
+          y1max = 100
+          y1_scale_si_by_1024 = true
+          y1_unit_autoscaling = true
+          y1_units = "units"
+        }
+      }
+    }
+  }
+  parameter_details {
+    name = "param1"
+    label = "param1"
+    default_value = "defaultQuery"
+    hide_from_view = false
+    parameter_type = "DYNAMIC"
+    values_to_readable_strings = {
+      defaultQuery = "dev-elasticsearch"
+    }
+    dynamic_field_type = "MATCHING_SOURCE_TAG"
+    query_value = "ts(aws.ec2.diskwritebytes.average)"
+  }
+  tags = [
+    "terraform",
+    "test"
+  ]
+}
+`)
+}
+func testAccCheckWavefrontDashboard_Markdown_ChartSettings() string {
+	return fmt.Sprintf(`
+resource "wavefront_dashboard" "chart_settings_dash" {
+  name = "Terraform Chart Settings"
+  description = "testing, testing"
+  url = "tftestcreate"
+  section {
+    name = "section 1"
+    row {
+      chart {
+        name = "chart 1"
+        description = "chart number 1"
+        units = "something per unit"
+        source {
+          name = "source name"
+          query = "ts()"
+        }
+        summarization = "MEAN"
+        chart_setting {
+          auto_column_tags = false
+          column_tags = "deprecated"
+          custom_tags = ["tag1", "tag2"]
+          expected_data_spacing = 120
+          fixed_legend_display_stats = ["stat1", "stat2"]
+          fixed_legend_enabled = true
+          fixed_legend_filter_field = "CURRENT"
+          fixed_legend_filter_limit = 1
+          fixed_legend_filter_sort = "TOP"
+          fixed_legend_hide_label = false
+          fixed_legend_position = "RIGHT"
+          fixed_legend_use_raw_stats = true
+          group_by_source = true
+          num_tags = 2
+          plain_markdown_content = "markdown content"
+          tag_mode = "all"
+          type = "markdown-widget"
+          windowing = "full"
+          window_size = 10
+          max = 100
+          min = 0
+          y0_scale_si_by_1024 = true
+          y0_unit_autoscaling = true
+          y1max = 100
+          y1_scale_si_by_1024 = true
+          y1_unit_autoscaling = true
+          y1_units = "units"
         }
       }
     }
