@@ -52,6 +52,36 @@ resource "wavefront_dashboard" "foobar" {
           name  = "source 1"
           query = "ts()"
         }
+        summarization = "MEAN"
+        chart_setting {
+          auto_column_tags = false
+          column_tags = "deprecated"
+          custom_tags = ["tag1", "tag2"]
+          expected_data_spacing = 120
+          fixed_legend_display_stats = ["stat1", "stat2"]
+          fixed_legend_enabled = true
+          fixed_legend_filter_field = "CURRENT"
+          fixed_legend_filter_limit = 1
+          fixed_legend_filter_sort = "TOP"
+          fixed_legend_hide_label = false
+          fixed_legend_position = "RIGHT"
+          fixed_legend_use_raw_stats = true
+          group_by_source = true
+          num_tags = 2
+          plain_markdown_content = "markdown content"
+          tag_mode = "all"
+          type = "markdown-widget"
+          windowing = "full"
+          window_size = 10
+          max = 100
+          min = 0
+          y0_scale_si_by_1024 = true
+          y0_unit_autoscaling = true
+          y1max = 100
+          y1_scale_si_by_1024 = true
+          y1_unit_autoscaling = true
+          y1_units = "units"
+        }
       }
     }
   }
