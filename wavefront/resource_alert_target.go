@@ -50,6 +50,11 @@ func resourceTarget() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			// EMAIL targets only
+			"is_html_content": {
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
 			// WEBHOOK targets only
 			"content_type": {
 				Type:     schema.TypeString,
@@ -86,6 +91,8 @@ func resourceTargetCreate(d *schema.ResourceData, m interface{}) error {
 		Recipient:     d.Get("recipient").(string),
 		EmailSubject:  d.Get("email_subject").(string),
 		ContentType:   d.Get("content_type").(string),
+                IsHtmlContent: d.Get("is_html_content").(bool),
+
 		CustomHeaders: customHeaders,
 	}
 
@@ -163,6 +170,7 @@ func resourceTargetUpdate(d *schema.ResourceData, m interface{}) error {
 	t.Recipient = d.Get("recipient").(string)
 	t.EmailSubject = d.Get("email_subject").(string)
 	t.ContentType = d.Get("content_type").(string)
+        t.IsHtmlContent = d.Get("is_html_content").(bool)
 	t.CustomHeaders = customHeaders
 
 	// Update the Target on Wavefront
