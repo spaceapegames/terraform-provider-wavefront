@@ -110,6 +110,8 @@ func TestAccWavefrontTarget_BasicEmail(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"wavefront_alert_target.test_target", "template", "{}"),
 					resource.TestCheckResourceAttr(
+						"wavefront_alert_target.test_target", "is_html_content", "true"),
+					resource.TestCheckResourceAttr(
 						"wavefront_alert_target.test_target", "triggers.#", "2"),
 					resource.TestCheckResourceAttr(
 						"wavefront_alert_target.test_target", "triggers.0", "ALERT_OPENED"),
@@ -295,6 +297,7 @@ resource "wavefront_alert_target" "test_target" {
 	method = "EMAIL"
   recipient = "test@example.com"
 	email_subject = "This is a test"
+        is_html_content = 1
 	template = "{}"
 	triggers = [
 		"ALERT_OPENED",
