@@ -92,7 +92,6 @@ func resourceTargetCreate(d *schema.ResourceData, m interface{}) error {
 		EmailSubject:  d.Get("email_subject").(string),
 		ContentType:   d.Get("content_type").(string),
 		IsHtmlContent: d.Get("is_html_content").(bool),
-
 		CustomHeaders: customHeaders,
 	}
 
