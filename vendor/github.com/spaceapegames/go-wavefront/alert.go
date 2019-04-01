@@ -37,7 +37,9 @@ type Alert struct {
 	// Severity is the severity of the Alert, and can be one of SEVERE,
 	// SMOKE, WARN or INFO
 	Severity string `json:"severity"`
-
+	
+	// Minutes to wait before re-sending notification of firing alert.
+	NotificationResendFrequencyMinutes int `json:"notificationResendFrequencyMinutes"`
 	// Status is the current status of the Alert
 	Status []string `json:"status"`
 

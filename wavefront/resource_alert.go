@@ -50,6 +50,10 @@ func resourceAlert() *schema.Resource {
 				Type:     schema.TypeInt,
 				Optional: true,
 			},
+			"notification_resend_frequency_minutes": {
+				Type:     schema.TypeInt,
+				Optional: true,
+			},
 			"severity": {
 				Type:     schema.TypeString,
 				Required: true,
@@ -76,15 +80,16 @@ func resourceAlertCreate(d *schema.ResourceData, m interface{}) error {
 	}
 
 	a := &wavefront.Alert{
-		Name:                d.Get("name").(string),
-		Target:              d.Get("target").(string),
-		Condition:           d.Get("condition").(string),
-		AdditionalInfo:      d.Get("additional_information").(string),
-		DisplayExpression:   d.Get("display_expression").(string),
-		Minutes:             d.Get("minutes").(int),
-		ResolveAfterMinutes: d.Get("resolve_after_minutes").(int),
-		Severity:            d.Get("severity").(string),
-		Tags:                tags,
+		Name:                               d.Get("name").(string),
+		Target:                             d.Get("target").(string),
+		Condition:                          d.Get("condition").(string),
+		AdditionalInfo:                     d.Get("additional_information").(string),
+		DisplayExpression:                  d.Get("display_expression").(string),
+		Minutes:                            d.Get("minutes").(int),
+		ResolveAfterMinutes:                d.Get("resolve_after_minutes").(int),
+		NotificationResendFrequencyMinutes: d.Get("notification_resend_frequency_minutes").(int),
+		Severity:                           d.Get("severity").(string),
+		Tags:                               tags,
 	}
 
 	// Create the alert on Wavefront
@@ -121,6 +126,7 @@ func resourceAlertRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("display_expression", tmpAlert.DisplayExpression)
 	d.Set("minutes", tmpAlert.Minutes)
 	d.Set("resolve_after_minutes", tmpAlert.ResolveAfterMinutes)
+	d.Set("notification_resend_frequency_minutes", tmpAlert.NotificationResendFrequencyMinutes)
 	d.Set("severity", tmpAlert.Severity)
 	d.Set("tags", tmpAlert.Tags)
 
@@ -151,6 +157,7 @@ func resourceAlertUpdate(d *schema.ResourceData, m interface{}) error {
 	a.DisplayExpression = d.Get("display_expression").(string)
 	a.Minutes = d.Get("minutes").(int)
 	a.ResolveAfterMinutes = d.Get("resolve_after_minutes").(int)
+	a.NotificationResendFrequencyMinutes = d.Get("notification_resend_frequency_minutes").(int)
 	a.Severity = d.Get("severity").(string)
 	a.Tags = tags
 
