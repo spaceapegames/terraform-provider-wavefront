@@ -82,9 +82,9 @@ func resourceAlertCreate(d *schema.ResourceData, m interface{}) error {
 	a := &wavefront.Alert{
 		Name:                               d.Get("name").(string),
 		Target:                             d.Get("target").(string),
-		Condition:                          d.Get("condition").(string),
-		AdditionalInfo:                     d.Get("additional_information").(string),
-		DisplayExpression:                  d.Get("display_expression").(string),
+		Condition:                          trimSpaces(d.Get("condition").(string)),
+		AdditionalInfo:                     trimSpaces(d.Get("additional_information").(string)),
+		DisplayExpression:                  trimSpaces(d.Get("display_expression").(string)),
 		Minutes:                            d.Get("minutes").(int),
 		ResolveAfterMinutes:                d.Get("resolve_after_minutes").(int),
 		NotificationResendFrequencyMinutes: d.Get("notification_resend_frequency_minutes").(int),
@@ -152,9 +152,9 @@ func resourceAlertUpdate(d *schema.ResourceData, m interface{}) error {
 	a := tmpAlert
 	a.Name = d.Get("name").(string)
 	a.Target = d.Get("target").(string)
-	a.Condition = d.Get("condition").(string)
-	a.AdditionalInfo = d.Get("additional_information").(string)
-	a.DisplayExpression = d.Get("display_expression").(string)
+	a.Condition = trimSpaces(d.Get("condition").(string))
+	a.AdditionalInfo = trimSpaces(d.Get("additional_information").(string))
+	a.DisplayExpression = trimSpaces(d.Get("display_expression").(string))
 	a.Minutes = d.Get("minutes").(int)
 	a.ResolveAfterMinutes = d.Get("resolve_after_minutes").(int)
 	a.NotificationResendFrequencyMinutes = d.Get("notification_resend_frequency_minutes").(int)
