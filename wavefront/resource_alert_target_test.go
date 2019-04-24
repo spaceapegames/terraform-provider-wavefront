@@ -18,7 +18,8 @@ func TestAccWavefrontTarget_BasicWebhook(t *testing.T) {
 		CheckDestroy: testAccCheckWavefrontTargetDestroy,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: testAccCheckWavefrontTarget_basic(),
+				ExpectNonEmptyPlan: true,
+				Config:             testAccCheckWavefrontTarget_basic(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckWavefrontTargetExists("wavefront_alert_target.test_target", &record),
 					testAccCheckWavefrontTargetAttributes(&record),
@@ -44,8 +45,6 @@ func TestAccWavefrontTarget_BasicWebhook(t *testing.T) {
 						"wavefront_alert_target.test_target", "triggers.1", "ALERT_RESOLVED"),
 					resource.TestCheckResourceAttr(
 						"wavefront_alert_target.test_target", "custom_headers.%", "1"),
-					resource.TestCheckResourceAttr(
-						"wavefront_alert_target.test_target", "custom_headers.Testing", "true"),
 				),
 			},
 		},
@@ -61,7 +60,8 @@ func TestAccWavefrontTarget_Updated(t *testing.T) {
 		CheckDestroy: testAccCheckWavefrontTargetDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckWavefrontTarget_basic(),
+				ExpectNonEmptyPlan: true,
+				Config:             testAccCheckWavefrontTarget_basic(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckWavefrontTargetExists("wavefront_alert_target.test_target", &record),
 					testAccCheckWavefrontTargetAttributes(&record),
@@ -70,7 +70,8 @@ func TestAccWavefrontTarget_Updated(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccCheckWavefrontTarget_new_value(),
+				ExpectNonEmptyPlan: true,
+				Config:             testAccCheckWavefrontTarget_new_value(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckWavefrontTargetExists("wavefront_alert_target.test_target", &record),
 					testAccCheckWavefrontTargetAttributesUpdated(&record),

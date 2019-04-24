@@ -19,15 +19,17 @@ func TestAccTarget_importBasic(t *testing.T) {
 		CheckDestroy: testAccCheckWavefrontTargetDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckWavefrontTargetImporter_basic(),
+				ExpectNonEmptyPlan: true,
+				Config:             testAccCheckWavefrontTargetImporter_basic(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckWavefrontTargetExists("wavefront_alert_target.foobar", &record),
 				),
 			},
 			{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"custom_headers.Testing"},
 			},
 		},
 	})
