@@ -14,7 +14,7 @@ fmt:
 	gofmt -w $(GOFMT_FILES)
 
 release:
-	docker build -t tfbuild -f DockerFileBuild
+	docker build -t tfbuild -f DockerFileBuild .
 	docker run --rm -v "$$PWD"\:/go/src/github.com/spaceapegames/terraform-provider-wavefront -e GO111MODULE=on -e GITHUB_TOKEN -w /go/src/github.com/spaceapegames/terraform-provider-wavefront tfbuild make
 	docker build -t go-code-release .
 	mkdir -p pkg
