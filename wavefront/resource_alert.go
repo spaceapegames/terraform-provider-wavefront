@@ -82,9 +82,9 @@ func resourceAlertCreate(d *schema.ResourceData, m interface{}) error {
 	a := &wavefront.Alert{
 		Name:                               d.Get("name").(string),
 		Target:                             d.Get("target").(string),
-		Condition:                          d.Get("condition").(string),
-		AdditionalInfo:                     d.Get("additional_information").(string),
-		DisplayExpression:                  d.Get("display_expression").(string),
+		Condition:                          trimSpaces(d.Get("condition").(string)),
+		AdditionalInfo:                     trimSpaces(d.Get("additional_information").(string)),
+		DisplayExpression:                  trimSpaces(d.Get("display_expression").(string)),
 		Minutes:                            d.Get("minutes").(int),
 		ResolveAfterMinutes:                d.Get("resolve_after_minutes").(int),
 		NotificationResendFrequencyMinutes: d.Get("notification_resend_frequency_minutes").(int),
@@ -121,9 +121,9 @@ func resourceAlertRead(d *schema.ResourceData, m interface{}) error {
 	d.SetId(*tmpAlert.ID)
 	d.Set("name", tmpAlert.Name)
 	d.Set("target", tmpAlert.Target)
-	d.Set("condition", tmpAlert.Condition)
-	d.Set("additional_information", tmpAlert.AdditionalInfo)
-	d.Set("display_expression", tmpAlert.DisplayExpression)
+	d.Set("condition", trimSpaces(tmpAlert.Condition))
+	d.Set("additional_information", trimSpaces(tmpAlert.AdditionalInfo))
+	d.Set("display_expression", trimSpaces(tmpAlert.DisplayExpression))
 	d.Set("minutes", tmpAlert.Minutes)
 	d.Set("resolve_after_minutes", tmpAlert.ResolveAfterMinutes)
 	d.Set("notification_resend_frequency_minutes", tmpAlert.NotificationResendFrequencyMinutes)
@@ -152,9 +152,9 @@ func resourceAlertUpdate(d *schema.ResourceData, m interface{}) error {
 	a := tmpAlert
 	a.Name = d.Get("name").(string)
 	a.Target = d.Get("target").(string)
-	a.Condition = d.Get("condition").(string)
-	a.AdditionalInfo = d.Get("additional_information").(string)
-	a.DisplayExpression = d.Get("display_expression").(string)
+	a.Condition = trimSpaces(d.Get("condition").(string))
+	a.AdditionalInfo = trimSpaces(d.Get("additional_information").(string))
+	a.DisplayExpression = trimSpaces(d.Get("display_expression").(string))
 	a.Minutes = d.Get("minutes").(int)
 	a.ResolveAfterMinutes = d.Get("resolve_after_minutes").(int)
 	a.NotificationResendFrequencyMinutes = d.Get("notification_resend_frequency_minutes").(int)
