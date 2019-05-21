@@ -38,7 +38,7 @@ resource "wavefront_dashboard" "foobar" {
   name        = "Terraform Test Dashboard"
   description = "a"
   url         = "tftestimport"
-
+  display_section_table_of_contents = true
   section {
     name = "section 1"
 

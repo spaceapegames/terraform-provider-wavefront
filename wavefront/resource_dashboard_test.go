@@ -316,6 +316,8 @@ func TestAccWavefrontDashboard_Basic(t *testing.T) {
 					testAccCheckWavefrontDashboardExists("wavefront_dashboard.test_dashboard", &record),
 					testAccCheckWavefrontDashboardAttributes(&record),
 
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.test_dashboard", "display_section_table_of_contents", "true"),
 					// Check against state that the attributes are as we expect
 					resource.TestCheckResourceAttr(
 						"wavefront_dashboard.test_dashboard", "name", "Terraform Test Dashboard"),
@@ -378,6 +380,8 @@ func TestAccWavefrontDashboard_Updated(t *testing.T) {
 					testAccCheckWavefrontDashboardAttributes(&record),
 					resource.TestCheckResourceAttr(
 						"wavefront_dashboard.test_dashboard", "name", "Terraform Test Dashboard"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.test_dashboard", "display_section_table_of_contents", "true"),
 				),
 			},
 			{
@@ -387,6 +391,8 @@ func TestAccWavefrontDashboard_Updated(t *testing.T) {
 					testAccCheckWavefrontDashboardAttributesUpdated(&record),
 					resource.TestCheckResourceAttr(
 						"wavefront_dashboard.test_dashboard", "name", "Terraform Test Dashboard Updated"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.test_dashboard", "display_section_table_of_contents", "false"),
 				),
 			},
 		},
@@ -979,7 +985,9 @@ resource "wavefront_dashboard" "test_dashboard" {
   name = "Terraform Test Dashboard"
   description = "testing, testing"
   url = "tftestcreate"
-  section {
+  display_section_table_of_contents = true
+
+  section{
     name = "section 1"
     row {
       chart {
@@ -1023,6 +1031,7 @@ resource "wavefront_dashboard" "test_dashboard" {
   name = "Terraform Test Dashboard Updated"
   description = "testing, testing"
   url = "tftestcreate"
+  display_section_table_of_contents = false
   section {
     name = "section 1"
     row {
