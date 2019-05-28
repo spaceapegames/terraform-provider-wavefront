@@ -485,6 +485,10 @@ func resourceDashboard() *schema.Resource {
 			},
 			"section":           section,
 			"parameter_details": parameterDetail,
+			"display_section_table_of_contents": {
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
 			"event_filter_type": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -964,15 +968,21 @@ func buildDashboard(d *schema.ResourceData) (*wavefront.Dashboard, error) {
 		eventFilterType = e.(string)
 	}
 
+	displayTOC := false
+	if toc, ok := d.GetOk("display_section_table_of_contents"); ok {
+		displayTOC = toc.(bool)
+	}
+
 	return &wavefront.Dashboard{
-		Name:             d.Get("name").(string),
-		ID:               d.Get("url").(string),
-		Tags:             tags,
-		Description:      d.Get("description").(string),
-		Url:              d.Get("url").(string),
-		Sections:         *buildSections(&terraformSections),
-		ParameterDetails: *buildParameterDetails(&terraformParams),
-		EventFilterType:  eventFilterType,
+		Name:                          d.Get("name").(string),
+		ID:                            d.Get("url").(string),
+		Tags:                          tags,
+		Description:                   d.Get("description").(string),
+		Url:                           d.Get("url").(string),
+		Sections:                      *buildSections(&terraformSections),
+		ParameterDetails:              *buildParameterDetails(&terraformParams),
+		EventFilterType:               eventFilterType,
+		DisplaySectionTableOfContents: displayTOC,
 	}, nil
 }
 
@@ -1024,6 +1034,8 @@ func resourceDashboardRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("name", dash.Name)
 	d.Set("description", dash.Description)
 	d.Set("url", dash.Url)
+
+	d.Set("display_section_table_of_contents", dash.DisplaySectionTableOfContents)
 
 	sections := []map[string]interface{}{}
 	for _, wavefrontSection := range dash.Sections {
