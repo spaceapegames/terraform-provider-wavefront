@@ -294,16 +294,16 @@ func testAccCheckWavefrontTarget_email() string {
 	return fmt.Sprintf(`
 resource "wavefront_alert_target" "test_target" {
   name = "Terraform Test Target"
-	description = "Test target"
-	method = "EMAIL"
+  description = "Test target"
+  method = "EMAIL"
   recipient = "test@example.com"
-	email_subject = "This is a test"
-        is_html_content = 1
-	template = "{}"
-	triggers = [
-		"ALERT_OPENED",
-		"ALERT_RESOLVED"
-	]
+  email_subject = "This is a test"
+  is_html_content = true
+  template = "{}"
+  triggers = [
+    "ALERT_OPENED",
+    "ALERT_RESOLVED"
+  ]
 }
 `)
 }

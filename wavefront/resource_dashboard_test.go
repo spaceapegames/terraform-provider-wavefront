@@ -1137,7 +1137,7 @@ resource "wavefront_dashboard" "test_dashboardb" {
     default_value = "Label"
     hide_from_view = false
     parameter_type = "SIMPLE"
-    values_to_readable_strings {
+    values_to_readable_strings = {
       Label = "test"
     }
   }
@@ -1174,7 +1174,7 @@ resource "wavefront_dashboard" "test_dashboardc" {
     default_value = "Label"
     hide_from_view = false
     parameter_type = "SIMPLE"
-    values_to_readable_strings {
+    values_to_readable_strings = {
       Label = "test"
     }
   }
