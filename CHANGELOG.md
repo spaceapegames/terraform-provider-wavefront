@@ -1,3 +1,11 @@
+## [v2.0.0] - 2019-06-11
+
+*Upgrade to Terraform 0.12 to support new language features*
+
+*May cause breaking changes due to new syntax ([See Upgrading to 0.12](https://www.terraform.io/upgrade-guides/0-12.html))*
+
+In testing `values_to_readable_strings {` needed to change to `values_to_readable_strings = {` and `is_html_content = 1` changed to `is_html_content = true`
+
 ## [v1.0.1] - 2018-01-08
 
 *Sort parameter details alphabetically to ensure no changes they are always evaluated in the correct order*
