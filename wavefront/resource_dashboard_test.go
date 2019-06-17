@@ -70,7 +70,12 @@ func TestBuildTerraformRow(t *testing.T) {
 		t.Errorf("Expected empty array, got Array of lenth %d", len(result["chart"].([]map[string]interface{})))
 	}
 
+	if result["height_factor"] != 0 {
+		t.Errorf("Expected default heightFactor 100, got heightFactor %d", result["height_factor"])
+	}
+
 	rowWithCharts := wavefront.Row{
+		HeightFactor: 50,
 		Charts: []wavefront.Chart{
 			{
 				Name:    "chart 1",
@@ -85,7 +90,11 @@ func TestBuildTerraformRow(t *testing.T) {
 
 	resultWithCharts := buildTerraformRow(rowWithCharts)
 	if len(resultWithCharts["chart"].([]map[string]interface{})) != 2 {
-		t.Errorf("Expected empty array, got Array of lenth %d", len(result["chart"].([]map[string]interface{})))
+		t.Errorf("Expected array of length 2, got Array of lenth %d", len(result["chart"].([]map[string]interface{})))
+	}
+
+	if resultWithCharts["height_factor"] != 50 {
+		t.Errorf("Expected heightFactor 50, got heightFactor %d", result["height_factor"])
 	}
 }
 
