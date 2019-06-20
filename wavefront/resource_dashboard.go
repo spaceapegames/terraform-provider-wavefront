@@ -393,6 +393,11 @@ func resourceDashboard() *schema.Resource {
 		Description: "Rows containing chart. Rows belong in Sections",
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
+				"height_factor": {
+					Type:        schema.TypeInt,
+					Optional:    true,
+					Description: "Height of the row",
+				},
 				"chart": chart,
 			},
 		},
@@ -483,6 +488,10 @@ func resourceDashboard() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
+			"default_time_window": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 			"section":           section,
 			"parameter_details": parameterDetail,
 			"display_section_table_of_contents": {
@@ -540,7 +549,6 @@ func buildTerraformRow(wavefrontRow wavefront.Row) map[string]interface{} {
 		charts = append(charts, buildTerraformChart(wavefrontRow))
 	}
 	row["chart"] = charts
-
 	return row
 }
 
@@ -662,6 +670,9 @@ func buildRows(terraformRows *[]interface{}) *[]wavefront.Row {
 
 		wavefrontRows[i] = wavefront.Row{
 			Charts: *buildCharts(&terraformCharts),
+		}
+		if t["height_factor"] != nil {
+			wavefrontRows[i].HeightFactor = t["height_factor"].(int)
 		}
 	}
 
@@ -972,6 +983,10 @@ func buildDashboard(d *schema.ResourceData) (*wavefront.Dashboard, error) {
 	if toc, ok := d.GetOk("display_section_table_of_contents"); ok {
 		displayTOC = toc.(bool)
 	}
+	defaultTimeWindow := "10m"
+	if dtw, ok := d.GetOk("default_time_window"); ok {
+		defaultTimeWindow = dtw.(string)
+	}
 
 	return &wavefront.Dashboard{
 		Name:                          d.Get("name").(string),
@@ -983,6 +998,7 @@ func buildDashboard(d *schema.ResourceData) (*wavefront.Dashboard, error) {
 		ParameterDetails:              *buildParameterDetails(&terraformParams),
 		EventFilterType:               eventFilterType,
 		DisplaySectionTableOfContents: displayTOC,
+		DefaultTimeWindow:             defaultTimeWindow,
 	}, nil
 }
 

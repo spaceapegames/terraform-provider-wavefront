@@ -990,6 +990,7 @@ resource "wavefront_dashboard" "test_dashboard" {
   section{
     name = "section 1"
     row {
+      height_factor = 100
       chart {
         name = "chart 1"
         description = "chart number 1"
