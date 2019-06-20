@@ -324,6 +324,8 @@ func TestAccWavefrontDashboard_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"wavefront_dashboard.test_dashboard", "description", "testing, testing"),
 					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.test_dashboard", "default_time_window", "10m"),
+					resource.TestCheckResourceAttr(
 						"wavefront_dashboard.test_dashboard", "url", "tftestcreate"),
 					resource.TestCheckResourceAttr(
 						"wavefront_dashboard.test_dashboard", "section.#", "1"),
@@ -331,6 +333,8 @@ func TestAccWavefrontDashboard_Basic(t *testing.T) {
 						"wavefront_dashboard.test_dashboard", "section.0.name", "section 1"),
 					resource.TestCheckResourceAttr(
 						"wavefront_dashboard.test_dashboard", "section.0.row.#", "1"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.test_dashboard", "section.0.row.0.height_factor", "200"),
 					resource.TestCheckResourceAttr(
 						"wavefront_dashboard.test_dashboard", "section.0.row.0.chart.#", "1"),
 					resource.TestCheckResourceAttr(
@@ -986,10 +990,12 @@ resource "wavefront_dashboard" "test_dashboard" {
   description = "testing, testing"
   url = "tftestcreate"
   display_section_table_of_contents = true
+  default_time_window = "10m"
 
   section{
     name = "section 1"
     row {
+      height_factor = 200
       chart {
         name = "chart 1"
         description = "chart number 1"
