@@ -43,7 +43,6 @@ resource "wavefront_dashboard" "foobar" {
     name = "section 1"
 
     row {
-      height_factor = 50
       chart {
         name        = "chart 1"
         description = "This is chart 1, showing something"

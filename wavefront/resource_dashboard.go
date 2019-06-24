@@ -394,11 +394,6 @@ func resourceDashboard() *schema.Resource {
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"chart": chart,
-				"height_factor": {
-					Type:        schema.TypeInt,
-					Optional:    true,
-					Description: "HeightFactor sets the height of the Row",
-				},
 			},
 		},
 	}
@@ -539,7 +534,7 @@ func buildTerraformSection(wavefrontSection wavefront.Section) map[string]interf
 // Construct a Wavefront Row
 func buildTerraformRow(wavefrontRow wavefront.Row) map[string]interface{} {
 	row := map[string]interface{}{}
-	row["height_factor"] = wavefrontRow.HeightFactor
+
 	charts := []map[string]interface{}{}
 	for _, wavefrontRow := range wavefrontRow.Charts {
 		charts = append(charts, buildTerraformChart(wavefrontRow))
@@ -662,13 +657,14 @@ func buildRows(terraformRows *[]interface{}) *[]wavefront.Row {
 
 	for i, t := range *terraformRows {
 		t := t.(map[string]interface{})
-		wavefrontRows[i] = wavefront.Row{}
-		if t["height_factor"] != nil {
-			wavefrontRows[i].HeightFactor = t["height_factor"].(int)
-		}
+
 		terraformCharts := t["chart"].([]interface{})
-		wavefrontRows[i].Charts = *buildCharts(&terraformCharts)
+
+		wavefrontRows[i] = wavefront.Row{
+			Charts: *buildCharts(&terraformCharts),
+		}
 	}
+
 	return &wavefrontRows
 }
 
