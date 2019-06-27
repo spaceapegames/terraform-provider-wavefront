@@ -88,8 +88,8 @@ func resourceAlertCreate(d *schema.ResourceData, m interface{}) error {
 		Minutes:                            d.Get("minutes").(int),
 		ResolveAfterMinutes:                d.Get("resolve_after_minutes").(int),
 		NotificationResendFrequencyMinutes: d.Get("notification_resend_frequency_minutes").(int),
-		Severity:                           d.Get("severity").(string),
-		Tags:                               tags,
+		Severity: d.Get("severity").(string),
+		Tags:     tags,
 	}
 
 	// Create the alert on Wavefront
