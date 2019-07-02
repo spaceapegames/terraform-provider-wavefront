@@ -3,7 +3,6 @@ package wavefront_plugin
 import (
 	"fmt"
 	"github.com/hashicorp/terraform/helper/schema"
-	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/resource"
@@ -172,21 +171,6 @@ func TestAccWavefrontAlert_Multiple(t *testing.T) {
 
 func TestAccWavefrontAlert_Threshold(t *testing.T) {
 	var record wavefront.Alert
-	var tmpTarget *wavefront.Target
-	var err error
-	tmpTargetID := ""
-
-	if os.Getenv("TF_ACC") == "true" {
-		tmpTarget, err = createTarget()
-		if err != nil {
-			t.Errorf("unable to create temp target: %s", err)
-			return
-		}
-
-		tmpTargetID = *tmpTarget.ID
-
-		defer deleteTarget(tmpTarget)
-	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
@@ -194,10 +178,10 @@ func TestAccWavefrontAlert_Threshold(t *testing.T) {
 		CheckDestroy: testAccCheckWavefrontAlertDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckWavefrontAlert_threshold(tmpTargetID),
+				Config: testAccCheckWavefrontAlert_threshold(),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckWavefrontAlertExists("wavefront_alert.test_threshold_alert", &record),
-					testAccCheckWavefrontThresholdAlertAttributes(&record, tmpTargetID),
+					testAccCheckWavefrontThresholdAlertAttributes(&record),
 
 					//Check against state that the attributes are as we expect
 					resource.TestCheckResourceAttr(
@@ -276,6 +260,28 @@ func TestResourceAlert_validateAlertConditions(t *testing.T) {
 			}(),
 			"",
 		},
+		{
+			"threshold alert invalid condition",
+			func() *schema.ResourceData {
+				d := resourceAlert().TestResourceData()
+				d.Set("alert_type", "THRESHOLD")
+				d.Set("threshold_conditions", map[string]interface{}{"banana": "ts()"})
+				return d
+			}(),
+			"invalid severity: banana",
+		},
+		{
+			"threshold alert invalid target",
+			func() *schema.ResourceData {
+				d := resourceAlert().TestResourceData()
+				d.Set("alert_type", "THRESHOLD")
+				d.Set("threshold_conditions", map[string]interface{}{"severe": "ts()"})
+				d.Set("threshold_targets", map[string]interface{}{"banana": "ts()"})
+
+				return d
+			}(),
+			"invalid severity: banana",
+		},
 	}
 
 	for _, c := range cases {
@@ -294,34 +300,6 @@ func TestResourceAlert_validateAlertConditions(t *testing.T) {
 			}
 		})
 	}
-}
-
-func createTarget() (*wavefront.Target, error) {
-	wt := wavefront.Target{
-		Title:       "test target",
-		Description: "testing threshols alert",
-		Method:      "WEBHOOK",
-		Recipient:   "https://hooks.slack.com/services/test/me",
-		ContentType: "application/json",
-		CustomHeaders: map[string]string{
-			"Testing": "true",
-		},
-		Triggers: []string{"ALERT_OPENED", "ALERT_RESOLVED"},
-		Template: "{}",
-	}
-
-	targets := testAccProvider.Meta().(*wavefrontClient).client.Targets()
-
-	err := targets.Create(&wt)
-	if err != nil {
-		return nil, err
-	}
-
-	return &wt, nil
-}
-
-func deleteTarget(wt *wavefront.Target) {
-	testAccProvider.Meta().(*wavefrontClient).client.Targets().Delete(wt)
 }
 
 func testAccCheckWavefrontAlertDestroy(s *terraform.State) error {
@@ -355,12 +333,12 @@ func testAccCheckWavefrontAlertAttributes(alert *wavefront.Alert) resource.TestC
 	}
 }
 
-func testAccCheckWavefrontThresholdAlertAttributes(alert *wavefront.Alert, targetID string) resource.TestCheckFunc {
+func testAccCheckWavefrontThresholdAlertAttributes(alert *wavefront.Alert) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 
-		if val, ok := alert.Targets["severe"]; ok {
-			if val != "target:"+targetID {
-				return fmt.Errorf("bad value: %s", alert.Targets["severe"])
+		if val, ok := alert.Conditions["severe"]; ok {
+			if val != "100-ts(\"cpu.usage_idle\", environment=preprod and cpu=cpu-total ) > 80" {
+				return fmt.Errorf("bad value: %s", alert.Conditions["severe"])
 			}
 		} else {
 			return fmt.Errorf("target not set")
@@ -567,8 +545,23 @@ resource "wavefront_alert" "test_alert3" {
 `)
 }
 
-func testAccCheckWavefrontAlert_threshold(targetID string) string {
+func testAccCheckWavefrontAlert_threshold() string {
 	return fmt.Sprintf(`
+resource "wavefront_alert_target" "test_target" {
+  name = "Terraform Test Target"
+  description = "Test target"
+  method = "EMAIL"
+  recipient = "test@example.com"
+  email_subject = "This is a test"
+  is_html_content = true
+  template = "{}"
+  triggers = [
+    "ALERT_OPENED",
+    "ALERT_RESOLVED"
+  ]
+}
+
+
 resource "wavefront_alert" "test_threshold_alert" {
   name = "Terraform Test Alert"
   alert_type = "THRESHOLD"
@@ -584,12 +577,12 @@ resource "wavefront_alert" "test_threshold_alert" {
   }
 
   threshold_targets = {
-	"severe" = "target:%s"
+	"severe" = "target:${wavefront_alert_target.test_target.id}"
   }
   
   tags = [
     "terraform"
   ]
 }
-`, targetID)
+`)
 }

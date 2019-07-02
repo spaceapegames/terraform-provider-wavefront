@@ -222,12 +222,17 @@ func validateAlertConditions(a *wavefront.Alert, d *schema.ResourceData) error {
 		a.AlertType = wavefront.AlertTypeThreshold
 		if conditions, ok := d.GetOk("threshold_conditions"); ok {
 			a.Conditions = trimSpacesMap(conditions.(map[string]interface{}))
+			err := validateThresholdLevels(a.Conditions)
+			if err != nil {
+				return err
+			}
 		} else {
 			return fmt.Errorf("threshold_conditions must be supplied for threshold alerts")
 		}
 
 		if targets, ok := d.GetOk("threshold_targets"); ok {
 			a.Targets = trimSpacesMap(targets.(map[string]interface{}))
+			return validateThresholdLevels(a.Targets)
 		}
 
 	} else if d.Get("alert_type") == wavefront.AlertTypeClassic {
@@ -247,5 +252,20 @@ func validateAlertConditions(a *wavefront.Alert, d *schema.ResourceData) error {
 		return fmt.Errorf("alert_type must be CLASSIC or THRESHOLD")
 	}
 
+	return nil
+}
+
+func validateThresholdLevels(m map[string]string) error {
+	for key := range m {
+		ok := false
+		for _, level := range []string{"severe", "warn", "info", "smoke"} {
+			if key == level {
+				ok = true
+			}
+		}
+		if !ok {
+			return fmt.Errorf("invalid severity: %s", key)
+		}
+	}
 	return nil
 }
