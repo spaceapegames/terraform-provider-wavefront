@@ -1,3 +1,9 @@
+## [v2.1.0] - 2019-07-03
+
+*Add support for Threshold Alerts*
+
+*Support creating dashboards from JSON*
+
 ## [v2.0.0] - 2019-06-11
 
 *Upgrade to Terraform 0.12 to support new language features*
