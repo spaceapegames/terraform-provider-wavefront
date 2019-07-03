@@ -325,6 +325,12 @@ github.com/sourcegraph/annotate v0.0.0-20160123013949-f4cad6c6324d/go.mod h1:Udh
 github.com/sourcegraph/syntaxhighlight v0.0.0-20170531221838-bd320f5d308e/go.mod h1:HuIsMU8RRBOtsCgI77wP899iHVBQpCmg4ErYMZB+2IA=
 github.com/spaceapegames/go-wavefront v0.0.0-20190424105721-72e8eb185145 h1:iN5Rc2gJLJFZ3Io4n5qxwe6uVKyHRfTGWc0yTauAH60=
 github.com/spaceapegames/go-wavefront v0.0.0-20190424105721-72e8eb185145/go.mod h1:Q9wbY/SM99cOM4NvoJ2SN1bzcJUJOEzta5C7dhnT5IM=
+github.com/spaceapegames/go-wavefront v0.0.0-20190627103934-9f0b48af3f8f h1:EG1F9wt5cMZ9az8TDMlMRD08HP8zdjn8f3fmsVBBhf4=
+github.com/spaceapegames/go-wavefront v0.0.0-20190627103934-9f0b48af3f8f/go.mod h1:Q9wbY/SM99cOM4NvoJ2SN1bzcJUJOEzta5C7dhnT5IM=
+github.com/spaceapegames/go-wavefront v1.6.1 h1:5ZezLy0NiiOFDhrgJA01c5/vZZbFcj2IL2ymdRXJzT8=
+github.com/spaceapegames/go-wavefront v1.6.1/go.mod h1:Q9wbY/SM99cOM4NvoJ2SN1bzcJUJOEzta5C7dhnT5IM=
+github.com/spaceapegames/go-wavefront v1.6.2 h1:5AHElze/Y6oi4DdpkYfksS4F0ItsBpV7WwuB3r159cY=
+github.com/spaceapegames/go-wavefront v1.6.2/go.mod h1:Q9wbY/SM99cOM4NvoJ2SN1bzcJUJOEzta5C7dhnT5IM=
 github.com/spf13/afero v1.2.1 h1:qgMbHoJbPbw579P+1zVY+6n4nIFuIchaIjzZ/I/Yq8M=
 github.com/spf13/afero v1.2.1/go.mod h1:9ZxEEn6pIJ8Rxe320qSDBk6AsU0r9pR7Q4OcevTdifk=
 github.com/spf13/pflag v1.0.2/go.mod h1:DYY7MBk1bdzusC3SYhjObp+wFpr4gzcvqqNjLnInEg4=

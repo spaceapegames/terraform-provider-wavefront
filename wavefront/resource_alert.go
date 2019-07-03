@@ -23,14 +23,27 @@ func resourceAlert() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
+			"alert_type": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Default:  wavefront.AlertTypeClassic,
+			},
 			"target": {
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
 			},
 			"condition": {
 				Type:      schema.TypeString,
-				Required:  true,
+				Optional:  true,
 				StateFunc: trimSpaces,
+			},
+			"threshold_conditions": {
+				Type:     schema.TypeMap,
+				Optional: true,
+			},
+			"threshold_targets": {
+				Type:     schema.TypeMap,
+				Optional: true,
 			},
 			"additional_information": {
 				Type:      schema.TypeString,
@@ -56,7 +69,7 @@ func resourceAlert() *schema.Resource {
 			},
 			"severity": {
 				Type:     schema.TypeString,
-				Required: true,
+				Optional: true,
 			},
 			"tags": {
 				Type:     schema.TypeSet,
@@ -71,6 +84,14 @@ func trimSpaces(d interface{}) string {
 	return strings.TrimSpace(d.(string))
 }
 
+func trimSpacesMap(m map[string]interface{}) map[string]string {
+	trimmed := map[string]string{}
+	for key, v := range m {
+		trimmed[key] = trimSpaces(v)
+	}
+	return trimmed
+}
+
 func resourceAlertCreate(d *schema.ResourceData, m interface{}) error {
 	alerts := m.(*wavefrontClient).client.Alerts()
 
@@ -81,19 +102,21 @@ func resourceAlertCreate(d *schema.ResourceData, m interface{}) error {
 
 	a := &wavefront.Alert{
 		Name:                               d.Get("name").(string),
-		Target:                             d.Get("target").(string),
-		Condition:                          trimSpaces(d.Get("condition").(string)),
 		AdditionalInfo:                     trimSpaces(d.Get("additional_information").(string)),
 		DisplayExpression:                  trimSpaces(d.Get("display_expression").(string)),
 		Minutes:                            d.Get("minutes").(int),
 		ResolveAfterMinutes:                d.Get("resolve_after_minutes").(int),
 		NotificationResendFrequencyMinutes: d.Get("notification_resend_frequency_minutes").(int),
-		Severity: d.Get("severity").(string),
-		Tags:     tags,
+		Tags:                               tags,
+	}
+
+	err := validateAlertConditions(a, d)
+	if err != nil {
+		return err
 	}
 
 	// Create the alert on Wavefront
-	err := alerts.Create(a)
+	err = alerts.Create(a)
 	if err != nil {
 		return fmt.Errorf("error creating Alert %s. %s", d.Get("name"), err)
 	}
@@ -129,6 +152,9 @@ func resourceAlertRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("notification_resend_frequency_minutes", tmpAlert.NotificationResendFrequencyMinutes)
 	d.Set("severity", tmpAlert.Severity)
 	d.Set("tags", tmpAlert.Tags)
+	d.Set("alert_type", tmpAlert.AlertType)
+	d.Set("threshold_conditions", tmpAlert.Conditions)
+	d.Set("threshold_targets", tmpAlert.Targets)
 
 	return nil
 }
@@ -151,15 +177,17 @@ func resourceAlertUpdate(d *schema.ResourceData, m interface{}) error {
 
 	a := tmpAlert
 	a.Name = d.Get("name").(string)
-	a.Target = d.Get("target").(string)
-	a.Condition = trimSpaces(d.Get("condition").(string))
 	a.AdditionalInfo = trimSpaces(d.Get("additional_information").(string))
 	a.DisplayExpression = trimSpaces(d.Get("display_expression").(string))
 	a.Minutes = d.Get("minutes").(int)
 	a.ResolveAfterMinutes = d.Get("resolve_after_minutes").(int)
 	a.NotificationResendFrequencyMinutes = d.Get("notification_resend_frequency_minutes").(int)
-	a.Severity = d.Get("severity").(string)
 	a.Tags = tags
+
+	err = validateAlertConditions(&a, d)
+	if err != nil {
+		return err
+	}
 
 	// Update the alert on Wavefront
 	err = alerts.Update(&a)
@@ -186,5 +214,59 @@ func resourceAlertDelete(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("Failed to delete Alert %s. %s", d.Id(), err)
 	}
 	d.SetId("")
+	return nil
+}
+
+func validateAlertConditions(a *wavefront.Alert, d *schema.ResourceData) error {
+	if d.Get("alert_type") == wavefront.AlertTypeThreshold {
+		a.AlertType = wavefront.AlertTypeThreshold
+		if conditions, ok := d.GetOk("threshold_conditions"); ok {
+			a.Conditions = trimSpacesMap(conditions.(map[string]interface{}))
+			err := validateThresholdLevels(a.Conditions)
+			if err != nil {
+				return err
+			}
+		} else {
+			return fmt.Errorf("threshold_conditions must be supplied for threshold alerts")
+		}
+
+		if targets, ok := d.GetOk("threshold_targets"); ok {
+			a.Targets = trimSpacesMap(targets.(map[string]interface{}))
+			return validateThresholdLevels(a.Targets)
+		}
+
+	} else if d.Get("alert_type") == wavefront.AlertTypeClassic {
+		a.AlertType = wavefront.AlertTypeClassic
+
+		if d.Get("condition") == "" {
+			return fmt.Errorf("condition must be supplied for classic alerts")
+		}
+		a.Condition = trimSpaces(d.Get("condition").(string))
+
+		if d.Get("severity") == "" {
+			return fmt.Errorf("severity must be supplied for classic alerts")
+		}
+		a.Severity = d.Get("severity").(string)
+		a.Target = d.Get("target").(string)
+	} else {
+		return fmt.Errorf("alert_type must be CLASSIC or THRESHOLD")
+	}
+
+	return nil
+}
+
+func validateThresholdLevels(m map[string]string) error {
+	for key := range m {
+		ok := false
+		for _, level := range []string{"severe", "warn", "info", "smoke"} {
+			if key == level {
+				ok = true
+				break
+			}
+		}
+		if !ok {
+			return fmt.Errorf("invalid severity: %s", key)
+		}
+	}
 	return nil
 }
