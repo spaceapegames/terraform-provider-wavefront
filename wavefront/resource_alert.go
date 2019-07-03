@@ -261,6 +261,7 @@ func validateThresholdLevels(m map[string]string) error {
 		for _, level := range []string{"severe", "warn", "info", "smoke"} {
 			if key == level {
 				ok = true
+				break
 			}
 		}
 		if !ok {
