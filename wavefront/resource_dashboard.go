@@ -494,10 +494,6 @@ func resourceDashboard() *schema.Resource {
 			},
 			"section":           section,
 			"parameter_details": parameterDetail,
-			"display_query_parameters": {
-				Type:     schema.TypeBool,
-				Optional: true,
-			},
 			"display_section_table_of_contents": {
 				Type:     schema.TypeBool,
 				Optional: true,
@@ -993,11 +989,6 @@ func buildDashboard(d *schema.ResourceData) (*wavefront.Dashboard, error) {
 		defaultTimeWindow = dtw.(string)
 	}
 
-	displayQueryParameters := false
-	if dqp, ok := d.GetOk("display_query_parameters"); ok {
-		displayQueryParameters = dqp.(bool)
-	}
-
 	return &wavefront.Dashboard{
 		Name:                          d.Get("name").(string),
 		ID:                            d.Get("url").(string),
@@ -1009,8 +1000,6 @@ func buildDashboard(d *schema.ResourceData) (*wavefront.Dashboard, error) {
 		EventFilterType:               eventFilterType,
 		DisplaySectionTableOfContents: displayTOC,
 		DefaultTimeWindow:             defaultTimeWindow,
-		DisplayQueryParameters:        displayQueryParameters,
-
 	}, nil
 }
 
