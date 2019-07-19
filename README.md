@@ -17,11 +17,6 @@ Once you have the plugin you should remove the `_os_arch` from the end of the fi
 
 Valid provider filenames are `terraform-provider-NAME_X.X.X` or `terraform-provider-NAME_vX.X.X`
 
-## Known Issues
-
-To ensure that applies of large batches of Alerts are successful you can use  the `-parallelism` flag to prevent parallel resource creations
-`terraform apply -parallelism=1`
-
 ## Building and Testing
 
 ### Build the plugin.

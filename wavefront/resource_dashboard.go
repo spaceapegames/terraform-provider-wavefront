@@ -1029,7 +1029,7 @@ func resourceDashboardCreate(d *schema.ResourceData, m interface{}) error {
 	}
 	d.SetId(dashboard.ID)
 
-	return nil
+	return resourceDashboardRead(d, m)
 }
 
 type Params []map[string]interface{}
@@ -1098,7 +1098,7 @@ func resourceDashboardUpdate(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		return fmt.Errorf("error Updating Dashboard %s. %s", d.Get("name"), err)
 	}
-	return nil
+	return resourceDashboardRead(d, m)
 }
 
 func resourceDashboardDelete(d *schema.ResourceData, m interface{}) error {

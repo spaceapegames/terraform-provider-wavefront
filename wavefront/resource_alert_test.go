@@ -2,6 +2,7 @@ package wavefront_plugin
 
 import (
 	"fmt"
+	"github.com/hashicorp/terraform/helper/schema"
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/resource"
@@ -168,6 +169,139 @@ func TestAccWavefrontAlert_Multiple(t *testing.T) {
 	})
 }
 
+func TestAccWavefrontAlert_Threshold(t *testing.T) {
+	var record wavefront.Alert
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckWavefrontAlertDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckWavefrontAlert_threshold(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckWavefrontAlertExists("wavefront_alert.test_threshold_alert", &record),
+					testAccCheckWavefrontThresholdAlertAttributes(&record),
+
+					//Check against state that the attributes are as we expect
+					resource.TestCheckResourceAttr(
+						"wavefront_alert.test_threshold_alert", "threshold_conditions.%", "3"),
+					resource.TestCheckResourceAttr(
+						"wavefront_alert.test_threshold_alert", "threshold_targets.%", "1"),
+				),
+			},
+		},
+	})
+}
+
+func TestResourceAlert_validateAlertConditions(t *testing.T) {
+
+	cases := []struct {
+		name         string
+		conf         *schema.ResourceData
+		errorMessage string
+	}{
+		{
+			"invalid alert type",
+			func() *schema.ResourceData {
+				d := resourceAlert().TestResourceData()
+				d.Set("alert_type", "WRONG")
+				return d
+			}(),
+			"alert_type must be CLASSIC or THRESHOLD",
+		},
+		{
+			"classic alert missing condition",
+			func() *schema.ResourceData {
+				d := resourceAlert().TestResourceData()
+				d.Set("alert_type", "CLASSIC")
+				d.Set("severity", "severe")
+				return d
+			}(),
+			"condition must be supplied for classic alerts",
+		},
+		{
+			"classic alert missing severity",
+			func() *schema.ResourceData {
+				d := resourceAlert().TestResourceData()
+				d.Set("alert_type", "CLASSIC")
+				d.Set("condition", "ts()")
+				return d
+			}(),
+			"severity must be supplied for classic alerts",
+		},
+		{
+			"classic alert",
+			func() *schema.ResourceData {
+				d := resourceAlert().TestResourceData()
+				d.Set("alert_type", "CLASSIC")
+				d.Set("condition", "ts()")
+				d.Set("severity", "severe")
+				return d
+			}(),
+			"",
+		},
+		{
+			"threshold alert missing conditions",
+			func() *schema.ResourceData {
+				d := resourceAlert().TestResourceData()
+				d.Set("alert_type", "THRESHOLD")
+				return d
+			}(),
+			"threshold_conditions must be supplied for threshold alerts",
+		},
+		{
+			"threshold alert",
+			func() *schema.ResourceData {
+				d := resourceAlert().TestResourceData()
+				d.Set("alert_type", "THRESHOLD")
+				d.Set("threshold_conditions", map[string]interface{}{"severe": "ts()"})
+				return d
+			}(),
+			"",
+		},
+		{
+			"threshold alert invalid condition",
+			func() *schema.ResourceData {
+				d := resourceAlert().TestResourceData()
+				d.Set("alert_type", "THRESHOLD")
+				d.Set("threshold_conditions", map[string]interface{}{"banana": "ts()"})
+				return d
+			}(),
+			"invalid severity: banana",
+		},
+		{
+			"threshold alert invalid target",
+			func() *schema.ResourceData {
+				d := resourceAlert().TestResourceData()
+				d.Set("alert_type", "THRESHOLD")
+				d.Set("threshold_conditions", map[string]interface{}{"severe": "ts()"})
+				d.Set("threshold_targets", map[string]interface{}{"banana": "ts()"})
+
+				return d
+			}(),
+			"invalid severity: banana",
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			err := validateAlertConditions(&wavefront.Alert{}, c.conf)
+
+			m := ""
+			if err == nil {
+				m = ""
+			} else {
+				m = err.Error()
+			}
+
+			if m != c.errorMessage {
+				t.Errorf("expected error '%s', got '%s'", c.errorMessage, err.Error())
+			}
+		})
+	}
+}
+
 func testAccCheckWavefrontAlertDestroy(s *terraform.State) error {
 
 	alerts := testAccProvider.Meta().(*wavefrontClient).client.Alerts()
@@ -193,6 +327,21 @@ func testAccCheckWavefrontAlertAttributes(alert *wavefront.Alert) resource.TestC
 
 		if alert.Target != "test@example.com" {
 			return fmt.Errorf("Bad value: %s", alert.Target)
+		}
+
+		return nil
+	}
+}
+
+func testAccCheckWavefrontThresholdAlertAttributes(alert *wavefront.Alert) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+
+		if val, ok := alert.Conditions["severe"]; ok {
+			if val != "100-ts(\"cpu.usage_idle\", environment=preprod and cpu=cpu-total ) > 80" {
+				return fmt.Errorf("bad value: %s", alert.Conditions["severe"])
+			}
+		} else {
+			return fmt.Errorf("target not set")
 		}
 
 		return nil
@@ -391,6 +540,48 @@ resource "wavefront_alert" "test_alert3" {
   severity = "WARN"
   tags = [
     "terraform",
+  ]
+}
+`)
+}
+
+func testAccCheckWavefrontAlert_threshold() string {
+	return fmt.Sprintf(`
+resource "wavefront_alert_target" "test_target" {
+  name = "Terraform Test Target"
+  description = "Test target"
+  method = "EMAIL"
+  recipient = "test@example.com"
+  email_subject = "This is a test"
+  is_html_content = true
+  template = "{}"
+  triggers = [
+    "ALERT_OPENED",
+    "ALERT_RESOLVED"
+  ]
+}
+
+
+resource "wavefront_alert" "test_threshold_alert" {
+  name = "Terraform Test Alert"
+  alert_type = "THRESHOLD"
+  additional_information = "This is a Terraform Test Alert"
+  display_expression = "100-ts(\"cpu.usage_idle\", environment=preprod and cpu=cpu-total )"
+  minutes = 5
+  resolve_after_minutes = 5
+
+  threshold_conditions = {
+    "severe" = "100-ts(\"cpu.usage_idle\", environment=preprod and cpu=cpu-total ) > 80"
+    "warn" = "100-ts(\"cpu.usage_idle\", environment=preprod and cpu=cpu-total ) > 60"
+    "info" = "100-ts(\"cpu.usage_idle\", environment=preprod and cpu=cpu-total ) > 50"
+  }
+
+  threshold_targets = {
+	"severe" = "target:${wavefront_alert_target.test_target.id}"
+  }
+  
+  tags = [
+    "terraform"
   ]
 }
 `)

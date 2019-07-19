@@ -85,7 +85,7 @@ func TestBuildTerraformRow(t *testing.T) {
 
 	resultWithCharts := buildTerraformRow(rowWithCharts)
 	if len(resultWithCharts["chart"].([]map[string]interface{})) != 2 {
-		t.Errorf("Expected empty array, got Array of lenth %d", len(result["chart"].([]map[string]interface{})))
+		t.Errorf("Expected array of length 2, got Array of lenth %d", len(result["chart"].([]map[string]interface{})))
 	}
 }
 
