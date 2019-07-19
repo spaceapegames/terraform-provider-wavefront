@@ -1010,6 +1010,7 @@ func buildDashboard(d *schema.ResourceData) (*wavefront.Dashboard, error) {
 		DisplaySectionTableOfContents: displayTOC,
 		DefaultTimeWindow:             defaultTimeWindow,
 		DisplayQueryParameters:        displayQueryParameters,
+
 	}, nil
 }
 
