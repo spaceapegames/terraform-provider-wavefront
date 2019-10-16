@@ -2,10 +2,11 @@ package wavefront_plugin
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/spaceapegames/go-wavefront"
-	"testing"
 )
 
 func TestBuildTerraformParameterDetail(t *testing.T) {
@@ -316,9 +317,11 @@ func TestAccWavefrontDashboard_Basic(t *testing.T) {
 					testAccCheckWavefrontDashboardExists("wavefront_dashboard.test_dashboard", &record),
 					testAccCheckWavefrontDashboardAttributes(&record),
 
+					// Check against state that the attributes are as we expect
 					resource.TestCheckResourceAttr(
 						"wavefront_dashboard.test_dashboard", "display_section_table_of_contents", "true"),
-					// Check against state that the attributes are as we expect
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.test_dashboard", "display_query_parameters", "true"),
 					resource.TestCheckResourceAttr(
 						"wavefront_dashboard.test_dashboard", "name", "Terraform Test Dashboard"),
 					resource.TestCheckResourceAttr(
@@ -382,6 +385,8 @@ func TestAccWavefrontDashboard_Updated(t *testing.T) {
 						"wavefront_dashboard.test_dashboard", "name", "Terraform Test Dashboard"),
 					resource.TestCheckResourceAttr(
 						"wavefront_dashboard.test_dashboard", "display_section_table_of_contents", "true"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.test_dashboard", "display_query_parameters", "true"),
 				),
 			},
 			{
@@ -393,6 +398,8 @@ func TestAccWavefrontDashboard_Updated(t *testing.T) {
 						"wavefront_dashboard.test_dashboard", "name", "Terraform Test Dashboard Updated"),
 					resource.TestCheckResourceAttr(
 						"wavefront_dashboard.test_dashboard", "display_section_table_of_contents", "false"),
+					resource.TestCheckResourceAttr(
+						"wavefront_dashboard.test_dashboard", "display_query_parameters", "false"),
 				),
 			},
 		},
@@ -986,6 +993,7 @@ resource "wavefront_dashboard" "test_dashboard" {
   description = "testing, testing"
   url = "tftestcreate"
   display_section_table_of_contents = true
+  display_query_parameters = true
 
   section{
     name = "section 1"
@@ -1032,6 +1040,7 @@ resource "wavefront_dashboard" "test_dashboard" {
   description = "testing, testing"
   url = "tftestcreate"
   display_section_table_of_contents = false
+  display_query_parameters = false
   section {
     name = "section 1"
     row {

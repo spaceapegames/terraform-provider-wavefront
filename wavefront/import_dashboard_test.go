@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"fmt"
+
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/spaceapegames/go-wavefront"
 )
@@ -39,6 +40,7 @@ resource "wavefront_dashboard" "foobar" {
   description = "a"
   url         = "tftestimport"
   display_section_table_of_contents = true
+  display_query_parameters = true
   section {
     name = "section 1"
 
