@@ -1,2 +1,2 @@
-FROM golang:1.12
+FROM golang:1.13
 RUN echo "machine github.com    login spaceapedev password ${GITHUB_TOKEN}" > ~/.netrc

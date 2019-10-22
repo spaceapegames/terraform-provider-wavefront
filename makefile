@@ -4,7 +4,7 @@ $(eval VERSION=$(shell cat version))
 
 default: build
 
-build: fmtcheck
+build: test
 	./build.sh
 
 fmtcheck:
