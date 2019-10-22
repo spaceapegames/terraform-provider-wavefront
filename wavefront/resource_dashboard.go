@@ -2,10 +2,11 @@ package wavefront_plugin
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/spaceapegames/go-wavefront"
 	"sort"
 	"strings"
+
+	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/spaceapegames/go-wavefront"
 )
 
 // Terraform Resource Declaration
@@ -486,6 +487,10 @@ func resourceDashboard() *schema.Resource {
 			"section":           section,
 			"parameter_details": parameterDetail,
 			"display_section_table_of_contents": {
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
+			"display_query_parameters": {
 				Type:     schema.TypeBool,
 				Optional: true,
 			},
@@ -973,6 +978,11 @@ func buildDashboard(d *schema.ResourceData) (*wavefront.Dashboard, error) {
 		displayTOC = toc.(bool)
 	}
 
+	displayQP := false
+	if qp, ok := d.GetOk("display_query_parameters"); ok {
+		displayQP = qp.(bool)
+	}
+
 	return &wavefront.Dashboard{
 		Name:                          d.Get("name").(string),
 		ID:                            d.Get("url").(string),
@@ -983,6 +993,7 @@ func buildDashboard(d *schema.ResourceData) (*wavefront.Dashboard, error) {
 		ParameterDetails:              *buildParameterDetails(&terraformParams),
 		EventFilterType:               eventFilterType,
 		DisplaySectionTableOfContents: displayTOC,
+		DisplayQueryParameters:        displayQP,
 	}, nil
 }
 
@@ -1036,6 +1047,7 @@ func resourceDashboardRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("url", dash.Url)
 
 	d.Set("display_section_table_of_contents", dash.DisplaySectionTableOfContents)
+	d.Set("display_query_parameters", dash.DisplayQueryParameters)
 
 	sections := []map[string]interface{}{}
 	for _, wavefrontSection := range dash.Sections {

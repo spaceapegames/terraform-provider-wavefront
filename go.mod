@@ -5,3 +5,5 @@ require (
 	github.com/hashicorp/terraform v0.12.0
 	github.com/spaceapegames/go-wavefront v1.6.2
 )
+
+go 1.13
