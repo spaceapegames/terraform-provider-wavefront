@@ -1,11 +1,15 @@
 package main
 
 import (
-	"github.com/hashicorp/terraform/plugin"
-	"github.com/spaceapegames/terraform-provider-wavefront/wavefront"
+	"github.com/MikeMcMahon/terraform-provider-wavefront/wavefront"
+	"github.com/hashicorp/terraform-plugin-sdk/plugin"
+	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )
 
 func main() {
 	plugin.Serve(&plugin.ServeOpts{
-		ProviderFunc: wavefront_plugin.Provider})
+		ProviderFunc: func() terraform.ResourceProvider {
+			return wavefront_plugin.Provider()
+		},
+	})
 }

@@ -202,8 +202,7 @@ github.com/posener/complete
 github.com/posener/complete/cmd/install
 github.com/posener/complete/cmd
 github.com/posener/complete/match
-# github.com/spaceapegames/go-wavefront v1.6.2
-github.com/spaceapegames/go-wavefront
+github.com/MikeMcMahon/go-wavefront v1.6.3
 # github.com/spf13/afero v1.2.1
 github.com/spf13/afero
 github.com/spf13/afero/mem
