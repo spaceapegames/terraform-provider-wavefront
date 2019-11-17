@@ -3,16 +3,15 @@ package wavefront_plugin
 import (
 	"fmt"
 
-	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/hashicorp/terraform/terraform"
-	"github.com/spaceapegames/go-wavefront"
+	"github.com/MikeMcMahon/go-wavefront"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 type wavefrontClient struct {
 	client wavefront.Client
 }
 
-func Provider() terraform.ResourceProvider {
+func Provider() *schema.Provider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"address": &schema.Schema{
@@ -30,6 +29,7 @@ func Provider() terraform.ResourceProvider {
 			"wavefront_alert":          resourceAlert(),
 			"wavefront_dashboard":      resourceDashboard(),
 			"wavefront_dashboard_json": resourceDashboardJson(),
+			"wavefront_derived_metric": resourceDerivedMetric(),
 			"wavefront_alert_target":   resourceTarget(),
 		},
 		ConfigureFunc: providerConfigure,

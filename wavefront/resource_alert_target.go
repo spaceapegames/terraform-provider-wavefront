@@ -2,9 +2,8 @@ package wavefront_plugin
 
 import (
 	"fmt"
-
-	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/spaceapegames/go-wavefront"
+	"github.com/MikeMcMahon/go-wavefront"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"strings"
 )
 
@@ -17,7 +16,6 @@ func resourceTarget() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
-
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:     schema.TypeString,
@@ -44,6 +42,26 @@ func resourceTarget() *schema.Resource {
 			"recipient": {
 				Type:     schema.TypeString,
 				Required: true,
+			},
+			"route": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"method": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"target": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"filter": {
+							Type:     schema.TypeMap,
+							Optional: true,
+						},
+					},
+				},
 			},
 			// EMAIL targets only
 			"email_subject": {
@@ -82,6 +100,18 @@ func resourceTargetCreate(d *schema.ResourceData, m interface{}) error {
 		customHeaders[k] = v.(string)
 	}
 
+	alertRoutes := []wavefront.AlertRoute{}
+	routes := d.Get("route").(*schema.Set).List()
+	for _, route := range routes {
+		r := route.(map[string]interface{})
+		f := r["filter"].(map[string]interface{})
+		alertRoutes = append(alertRoutes, wavefront.AlertRoute{
+			Method: r["method"].(string),
+			Target: r["target"].(string),
+			Filter: f["key"].(string) + " " + f["value"].(string),
+		})
+	}
+
 	t := &wavefront.Target{
 		Title:         d.Get("name").(string),
 		Description:   d.Get("description").(string),
@@ -92,6 +122,7 @@ func resourceTargetCreate(d *schema.ResourceData, m interface{}) error {
 		EmailSubject:  d.Get("email_subject").(string),
 		ContentType:   d.Get("content_type").(string),
 		IsHtmlContent: d.Get("is_html_content").(bool),
+		Routes:        alertRoutes,
 		CustomHeaders: customHeaders,
 	}
 
@@ -115,7 +146,9 @@ func resourceTargetRead(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		if strings.Contains(err.Error(), "404") {
 			d.SetId("")
+			return nil
 		} else {
+			d.SetId("")
 			return fmt.Errorf("error finding Wavefront Alert Target %s. %s", d.Id(), err)
 		}
 	}
@@ -133,6 +166,24 @@ func resourceTargetRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("is_html_content", tmpTarget.IsHtmlContent)
 	d.Set("custom_headers", tmpTarget.CustomHeaders)
 
+	// Convert the routes from AlertRoute -> Terraform Friendly
+	if tmpTarget.Routes != nil {
+		var routes []interface{}
+		for _, route := range tmpTarget.Routes {
+			alertRoute := make(map[string]interface{})
+			filterKV := strings.Split(route.Filter, " ")
+			alertRoute["method"] = route.Method
+			alertRoute["target"] = route.Target
+			alertRoute["filter"] = map[string]interface{}{
+				"key":   filterKV[0],
+				"value": filterKV[1],
+			}
+
+			routes = append(routes, alertRoute)
+		}
+		d.Set("routes", routes)
+	}
+
 	return nil
 }
 
@@ -149,6 +200,10 @@ func resourceTargetUpdate(d *schema.ResourceData, m interface{}) error {
 		})
 	if err != nil {
 		return fmt.Errorf("Error finding Wavefront Target %s. %s", d.Id(), err)
+	}
+
+	if len(results) == 0 {
+		return fmt.Errorf("error finding Wavefront Alert Target %s", d.Id())
 	}
 
 	var triggers []string

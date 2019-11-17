@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/spaceapegames/go-wavefront"
+	"github.com/MikeMcMahon/go-wavefront"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 func resourceAlert() *schema.Resource {
@@ -17,25 +17,27 @@ func resourceAlert() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
-
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
 			"alert_type": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  wavefront.AlertTypeClassic,
+				Type:             schema.TypeString,
+				Optional:         true,
+				Default:          wavefront.AlertTypeClassic,
+				DiffSuppressFunc: suppressCase,
 			},
 			"target": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:             schema.TypeString,
+				Optional:         true,
+				StateFunc:        trimSpaces,
+				DiffSuppressFunc: suppressSpaces,
 			},
 			"condition": {
-				Type:      schema.TypeString,
-				Optional:  true,
-				StateFunc: trimSpaces,
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: suppressSpaces,
 			},
 			"threshold_conditions": {
 				Type:     schema.TypeMap,
@@ -46,14 +48,14 @@ func resourceAlert() *schema.Resource {
 				Optional: true,
 			},
 			"additional_information": {
-				Type:      schema.TypeString,
-				Optional:  true,
-				StateFunc: trimSpaces,
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: suppressSpaces,
 			},
 			"display_expression": {
-				Type:      schema.TypeString,
-				Optional:  true,
-				StateFunc: trimSpaces,
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: suppressSpaces,
 			},
 			"minutes": {
 				Type:     schema.TypeInt,
@@ -68,8 +70,9 @@ func resourceAlert() *schema.Resource {
 				Optional: true,
 			},
 			"severity": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:             schema.TypeString,
+				Optional:         true,
+				DiffSuppressFunc: suppressCase,
 			},
 			"tags": {
 				Type:     schema.TypeSet,
@@ -78,18 +81,6 @@ func resourceAlert() *schema.Resource {
 			},
 		},
 	}
-}
-
-func trimSpaces(d interface{}) string {
-	return strings.TrimSpace(d.(string))
-}
-
-func trimSpacesMap(m map[string]interface{}) map[string]string {
-	trimmed := map[string]string{}
-	for key, v := range m {
-		trimmed[key] = trimSpaces(v)
-	}
-	return trimmed
 }
 
 func resourceAlertCreate(d *schema.ResourceData, m interface{}) error {
@@ -102,8 +93,8 @@ func resourceAlertCreate(d *schema.ResourceData, m interface{}) error {
 
 	a := &wavefront.Alert{
 		Name:                               d.Get("name").(string),
-		AdditionalInfo:                     trimSpaces(d.Get("additional_information").(string)),
-		DisplayExpression:                  trimSpaces(d.Get("display_expression").(string)),
+		AdditionalInfo:                     trimSpaces(d.Get("additional_information")),
+		DisplayExpression:                  trimSpaces(d.Get("display_expression")),
 		Minutes:                            d.Get("minutes").(int),
 		ResolveAfterMinutes:                d.Get("resolve_after_minutes").(int),
 		NotificationResendFrequencyMinutes: d.Get("notification_resend_frequency_minutes").(int),
@@ -135,6 +126,7 @@ func resourceAlertRead(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		if strings.Contains(err.Error(), "404") {
 			d.SetId("")
+			return nil
 		} else {
 			return fmt.Errorf("error finding Wavefront Alert %s. %s", d.Id(), err)
 		}
@@ -166,8 +158,10 @@ func resourceAlertUpdate(d *schema.ResourceData, m interface{}) error {
 	tmpAlert := wavefront.Alert{ID: &alertID}
 	err := alerts.Get(&tmpAlert)
 
+	d.SetId("")
 	if err != nil {
-		return fmt.Errorf("Error finding Wavefront Alert %s. %s", d.Id(), err)
+		d.SetId("")
+		return nil
 	}
 
 	var tags []string
@@ -218,7 +212,8 @@ func resourceAlertDelete(d *schema.ResourceData, m interface{}) error {
 }
 
 func validateAlertConditions(a *wavefront.Alert, d *schema.ResourceData) error {
-	if d.Get("alert_type") == wavefront.AlertTypeThreshold {
+	alertType := strings.ToUpper(d.Get("alert_type").(string))
+	if alertType == wavefront.AlertTypeThreshold {
 		a.AlertType = wavefront.AlertTypeThreshold
 		if conditions, ok := d.GetOk("threshold_conditions"); ok {
 			a.Conditions = trimSpacesMap(conditions.(map[string]interface{}))
@@ -235,7 +230,7 @@ func validateAlertConditions(a *wavefront.Alert, d *schema.ResourceData) error {
 			return validateThresholdLevels(a.Targets)
 		}
 
-	} else if d.Get("alert_type") == wavefront.AlertTypeClassic {
+	} else if alertType == wavefront.AlertTypeClassic {
 		a.AlertType = wavefront.AlertTypeClassic
 
 		if d.Get("condition") == "" {

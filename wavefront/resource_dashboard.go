@@ -5,8 +5,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/spaceapegames/go-wavefront"
+	"github.com/MikeMcMahon/go-wavefront"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 )
 
 // Terraform Resource Declaration
@@ -1035,6 +1035,7 @@ func resourceDashboardRead(d *schema.ResourceData, m interface{}) error {
 	if err != nil {
 		if strings.Contains(err.Error(), "404") {
 			d.SetId("")
+			return nil
 		} else {
 			return fmt.Errorf("error finding Wavefront Dashboard %s. %s", d.Id(), err)
 		}
