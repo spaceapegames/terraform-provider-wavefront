@@ -186,7 +186,7 @@ func testAccCheckWavefrontDerivedMetricDestroy(s *terraform.State) error {
 }
 
 func testAccCheckWavefrontDerivedMetric_Basic() string {
-	return `
+	return fmt.Sprintf(`
 resource "wavefront_derived_metric" "derived" {
   name                   = "dummy derived metric"
   minutes                = 5
@@ -198,11 +198,11 @@ resource "wavefront_derived_metric" "derived" {
     "withmytags"
   ]
 }
-`
+`)
 }
 
 func testAccCheckWavefrontDerivedMetric_Updated() string {
-	return `
+	return fmt.Sprintf(`
 resource "wavefront_derived_metric" "derived" {
   name                   = "dummy derived metric"
   minutes                = 10
@@ -214,11 +214,11 @@ resource "wavefront_derived_metric" "derived" {
     "withmytags"
   ]
 }
-`
+`)
 }
 
 func testAccCheckWavefrontDerivedMetric_Multiple() string {
-	return `
+	return fmt.Sprintf(`
 resource "wavefront_derived_metric" "derived" {
   name                   = "dummy derived metric"
   minutes                = 5
@@ -242,5 +242,5 @@ resource "wavefront_derived_metric" "derived2" {
     "withmytags"
   ]
 }
-`
+`)
 }
