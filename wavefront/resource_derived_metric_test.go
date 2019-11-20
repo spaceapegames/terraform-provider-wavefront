@@ -67,7 +67,7 @@ func TestAccWavefrontDerivedMetric_Updated(t *testing.T) {
 	})
 }
 
-func TestAccWavefrontDerivedMetric_Basic(t *testing.T) {
+func TestAccWavefrontDerivedMetric_Multiple(t *testing.T) {
 	var record wavefront.DerivedMetric
 	var record2 wavefront.DerivedMetric
 
@@ -234,7 +234,7 @@ resource "wavefront_derived_metric" "derived" {
 resource "wavefront_derived_metric" "derived2" {
   name                   = "dummy derived metric"
   minutes                = 5
-  query                  = "aliasMetric(15, \"some.metric\")"
+  query                  = "aliasMetric(5, \"some.metric\")"
   additional_information = "this is a dummy derived metric"
   tags = [
     "somemetric",
