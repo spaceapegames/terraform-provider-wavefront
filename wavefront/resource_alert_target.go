@@ -127,68 +127,6 @@ func resourceTargetCreate(d *schema.ResourceData, m interface{}) error {
 	return nil
 }
 
-// Safely extracts the alert routes from the alert target
-func resourceDecodeAlertRoutes(d *schema.ResourceData) []wavefront.AlertRoute {
-	var routes *schema.Set
-	if d.HasChange("route") {
-		// get the old / new
-		o, n := d.GetChange("route")
-		if o == nil {
-			o = new(schema.Set)
-		}
-		if n == nil {
-			n = new(schema.Set)
-		}
-
-		// if old is nil that's fine we just slug in the difference
-		// there is no direct API call to add/remove a specific route
-		// if new is nil then we should send an empty set of routes to clear out any existing routes
-		routes = n.(*schema.Set)
-	} else {
-		routes = d.Get("route").(*schema.Set)
-	}
-	var alertRoutes []wavefront.AlertRoute
-	for _, route := range routes.List() {
-		r := route.(map[string]interface{})
-		f := r["filter"].(map[string]interface{})
-		m := r["method"].(string)
-		t := r["target"].(string)
-
-		// This happens only during an update so we should ignore this value as the PUT
-		// slug will cause erasure of the sold value in wavefront.
-		if m == "" && t == "" && len(f) == 0 {
-			continue
-		}
-
-		alertRoutes = append(alertRoutes, wavefront.AlertRoute{
-			Method: m,
-			Target: t,
-			Filter: f["key"].(string) + " " + f["value"].(string),
-		})
-	}
-	return alertRoutes
-}
-
-func resourceEncodeAlertRoutes(routes *[]wavefront.AlertRoute, d *schema.ResourceData) {
-	// Convert the routes from AlertRoute -> Terraform Friendly
-	if routes != nil {
-		var r []interface{}
-		for _, route := range *routes {
-			alertRoute := make(map[string]interface{})
-			filterKV := strings.Split(route.Filter, " ")
-			alertRoute["method"] = route.Method
-			alertRoute["target"] = route.Target
-			alertRoute["filter"] = map[string]interface{}{
-				"key":   filterKV[0],
-				"value": filterKV[1],
-			}
-
-			r = append(r, alertRoute)
-		}
-		d.Set("route", r)
-	}
-}
-
 func resourceTargetRead(d *schema.ResourceData, m interface{}) error {
 	targets := m.(*wavefrontClient).client.Targets()
 
@@ -296,4 +234,66 @@ func resourceTargetDelete(d *schema.ResourceData, m interface{}) error {
 	}
 	d.SetId("")
 	return nil
+}
+
+// Safely extracts the alert routes from the alert target
+func resourceDecodeAlertRoutes(d *schema.ResourceData) []wavefront.AlertRoute {
+	var routes *schema.Set
+	if d.HasChange("route") {
+		// get the old / new
+		o, n := d.GetChange("route")
+		if o == nil {
+			o = new(schema.Set)
+		}
+		if n == nil {
+			n = new(schema.Set)
+		}
+
+		// if old is nil that's fine we just slug in the difference
+		// there is no direct API call to add/remove a specific route
+		// if new is nil then we should send an empty set of routes to clear out any existing routes
+		routes = n.(*schema.Set)
+	} else {
+		routes = d.Get("route").(*schema.Set)
+	}
+	var alertRoutes []wavefront.AlertRoute
+	for _, route := range routes.List() {
+		r := route.(map[string]interface{})
+		f := r["filter"].(map[string]interface{})
+		m := r["method"].(string)
+		t := r["target"].(string)
+
+		// This happens only during an update so we should ignore this value as the PUT
+		// slug will cause erasure of the sold value in wavefront.
+		if m == "" && t == "" && len(f) == 0 {
+			continue
+		}
+
+		alertRoutes = append(alertRoutes, wavefront.AlertRoute{
+			Method: m,
+			Target: t,
+			Filter: f["key"].(string) + " " + f["value"].(string),
+		})
+	}
+	return alertRoutes
+}
+
+// Convert the routes from AlertRoute -> Terraform Friendly
+func resourceEncodeAlertRoutes(routes *[]wavefront.AlertRoute, d *schema.ResourceData) {
+	if routes != nil {
+		var r []interface{}
+		for _, route := range *routes {
+			alertRoute := make(map[string]interface{})
+			filterKV := strings.Split(route.Filter, " ")
+			alertRoute["method"] = route.Method
+			alertRoute["target"] = route.Target
+			alertRoute["filter"] = map[string]interface{}{
+				"key":   filterKV[0],
+				"value": filterKV[1],
+			}
+
+			r = append(r, alertRoute)
+		}
+		d.Set("route", r)
+	}
 }
