@@ -100,17 +100,7 @@ func resourceTargetCreate(d *schema.ResourceData, m interface{}) error {
 		customHeaders[k] = v.(string)
 	}
 
-	alertRoutes := []wavefront.AlertRoute{}
-	routes := d.Get("route").(*schema.Set).List()
-	for _, route := range routes {
-		r := route.(map[string]interface{})
-		f := r["filter"].(map[string]interface{})
-		alertRoutes = append(alertRoutes, wavefront.AlertRoute{
-			Method: r["method"].(string),
-			Target: r["target"].(string),
-			Filter: f["key"].(string) + " " + f["value"].(string),
-		})
-	}
+	alertRoutes := resourceDecodeAlertRoutes(d)
 
 	t := &wavefront.Target{
 		Title:         d.Get("name").(string),
@@ -135,6 +125,68 @@ func resourceTargetCreate(d *schema.ResourceData, m interface{}) error {
 	d.SetId(*t.ID)
 
 	return nil
+}
+
+// Safely extracts the alert routes from the alert target
+func resourceDecodeAlertRoutes(d *schema.ResourceData) []wavefront.AlertRoute {
+	var routes *schema.Set
+	if d.HasChange("route") {
+		// get the old / new
+		o, n := d.GetChange("route")
+		if o == nil {
+			o = new(schema.Set)
+		}
+		if n == nil {
+			n = new(schema.Set)
+		}
+
+		// if old is nil that's fine we just slug in the difference
+		// there is no direct API call to add/remove a specific route
+		// if new is nil then we should send an empty set of routes to clear out any existing routes
+		routes = n.(*schema.Set)
+	} else {
+		routes = d.Get("route").(*schema.Set)
+	}
+	var alertRoutes []wavefront.AlertRoute
+	for _, route := range routes.List() {
+		r := route.(map[string]interface{})
+		f := r["filter"].(map[string]interface{})
+		m := r["method"].(string)
+		t := r["target"].(string)
+
+		// This happens only during an update so we should ignore this value as the PUT
+		// slug will cause erasure of the sold value in wavefront.
+		if m == "" && t == "" && len(f) == 0 {
+			continue
+		}
+
+		alertRoutes = append(alertRoutes, wavefront.AlertRoute{
+			Method: m,
+			Target: t,
+			Filter: f["key"].(string) + " " + f["value"].(string),
+		})
+	}
+	return alertRoutes
+}
+
+func resourceEncodeAlertRoutes(routes *[]wavefront.AlertRoute, d *schema.ResourceData) {
+	// Convert the routes from AlertRoute -> Terraform Friendly
+	if routes != nil {
+		var r []interface{}
+		for _, route := range *routes {
+			alertRoute := make(map[string]interface{})
+			filterKV := strings.Split(route.Filter, " ")
+			alertRoute["method"] = route.Method
+			alertRoute["target"] = route.Target
+			alertRoute["filter"] = map[string]interface{}{
+				"key":   filterKV[0],
+				"value": filterKV[1],
+			}
+
+			r = append(r, alertRoute)
+		}
+		d.Set("route", r)
+	}
 }
 
 func resourceTargetRead(d *schema.ResourceData, m interface{}) error {
@@ -166,23 +218,7 @@ func resourceTargetRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("is_html_content", tmpTarget.IsHtmlContent)
 	d.Set("custom_headers", tmpTarget.CustomHeaders)
 
-	// Convert the routes from AlertRoute -> Terraform Friendly
-	if tmpTarget.Routes != nil {
-		var routes []interface{}
-		for _, route := range tmpTarget.Routes {
-			alertRoute := make(map[string]interface{})
-			filterKV := strings.Split(route.Filter, " ")
-			alertRoute["method"] = route.Method
-			alertRoute["target"] = route.Target
-			alertRoute["filter"] = map[string]interface{}{
-				"key":   filterKV[0],
-				"value": filterKV[1],
-			}
-
-			routes = append(routes, alertRoute)
-		}
-		d.Set("routes", routes)
-	}
+	resourceEncodeAlertRoutes(&tmpTarget.Routes, d)
 
 	return nil
 }
@@ -199,7 +235,7 @@ func resourceTargetUpdate(d *schema.ResourceData, m interface{}) error {
 			},
 		})
 	if err != nil {
-		return fmt.Errorf("Error finding Wavefront Target %s. %s", d.Id(), err)
+		return fmt.Errorf("error finding Wavefront Target %s. %s", d.Id(), err)
 	}
 
 	if len(results) == 0 {
@@ -227,6 +263,7 @@ func resourceTargetUpdate(d *schema.ResourceData, m interface{}) error {
 	t.ContentType = d.Get("content_type").(string)
 	t.IsHtmlContent = d.Get("is_html_content").(bool)
 	t.CustomHeaders = customHeaders
+	t.Routes = resourceDecodeAlertRoutes(d)
 
 	// Update the Target on Wavefront
 	err = targets.Update(t)
