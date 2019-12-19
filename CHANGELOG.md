@@ -1,3 +1,13 @@
+## [v2.1.1]
+
+*Add support for Derived Metrics*
+
+*Add Support for Alert Target Routes*
+
+*Add Support for Users*
+
+*Fixed issue where certain deleted resources would not properly detect to recreate resource on plan/apply*
+
 ## [v2.1.0] - 2019-07-03
 
 *Add support for Threshold Alerts*
