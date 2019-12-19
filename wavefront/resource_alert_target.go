@@ -173,7 +173,7 @@ func resourceTargetUpdate(d *schema.ResourceData, m interface{}) error {
 			},
 		})
 	if err != nil {
-		return fmt.Errorf("error finding Wavefront Target %s. %s", d.Id(), err)
+		return fmt.Errorf("error finding Wavefront Alert Target %s. %s", d.Id(), err)
 	}
 
 	if len(results) == 0 {
