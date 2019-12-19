@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/MikeMcMahon/terraform-provider-wavefront/wavefront"
+	"github.com/WavefrontHQ/terraform-provider-wavefront/wavefront"
 	"github.com/hashicorp/terraform-plugin-sdk/plugin"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 )

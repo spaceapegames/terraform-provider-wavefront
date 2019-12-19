@@ -2,7 +2,7 @@ package wavefront_plugin
 
 import (
 	"fmt"
-	"github.com/MikeMcMahon/go-wavefront"
+	"github.com/WavefrontHQ/go-wavefront-management-api"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"strings"
 )
