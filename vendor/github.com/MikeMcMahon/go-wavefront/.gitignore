@@ -1,5 +1,0 @@
-# Ignore binary 
-cmd/wavefront/wavefront
-# Ignore vendored library packages
-vendor/*/
-.idea/*

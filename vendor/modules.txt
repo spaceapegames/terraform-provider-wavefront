@@ -6,8 +6,8 @@ cloud.google.com/go/internal/optional
 cloud.google.com/go/internal/trace
 cloud.google.com/go/internal/version
 cloud.google.com/go/storage
-# github.com/MikeMcMahon/go-wavefront v1.7.0-RC2
-github.com/MikeMcMahon/go-wavefront
+# github.com/WavefrontHQ/go-wavefront-management-api v1.7.0-RC2
+github.com/WavefrontHQ/go-wavefront-management-api
 # github.com/agext/levenshtein v1.2.2
 github.com/agext/levenshtein
 # github.com/apparentlymart/go-cidr v1.0.1
