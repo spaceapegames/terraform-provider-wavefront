@@ -31,6 +31,7 @@ func Provider() *schema.Provider {
 			"wavefront_dashboard_json": resourceDashboardJson(),
 			"wavefront_derived_metric": resourceDerivedMetric(),
 			"wavefront_alert_target":   resourceTarget(),
+			"wavefront_user":           resourceUser(),
 		},
 		ConfigureFunc: providerConfigure,
 	}
