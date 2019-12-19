@@ -37,6 +37,7 @@ func resourceAlert() *schema.Resource {
 			"condition": {
 				Type:             schema.TypeString,
 				Optional:         true,
+				StateFunc:        trimSpaces,
 				DiffSuppressFunc: suppressSpaces,
 			},
 			"threshold_conditions": {
@@ -158,7 +159,6 @@ func resourceAlertUpdate(d *schema.ResourceData, m interface{}) error {
 	tmpAlert := wavefront.Alert{ID: &alertID}
 	err := alerts.Get(&tmpAlert)
 
-	d.SetId("")
 	if err != nil {
 		d.SetId("")
 		return nil

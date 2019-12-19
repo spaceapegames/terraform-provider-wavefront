@@ -119,7 +119,7 @@ func testAccCheckWavefrontDerivedMetricAttributes(dm *wavefront.DerivedMetric) r
 			return fmt.Errorf("bad value: %s", dm.Name)
 		}
 
-		if dm.Minutes != 5 {
+		if !(dm.Minutes == 5 || dm.Minutes == 10) {
 			return fmt.Errorf("bad value: %d", dm.Minutes)
 		}
 
