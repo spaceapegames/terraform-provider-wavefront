@@ -1,4 +1,4 @@
-## [v2.1.1]
+## [v2.1.1] - 2019-12-19
 
 *Add support for Derived Metrics*
 
