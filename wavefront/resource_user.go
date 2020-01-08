@@ -106,11 +106,13 @@ func resourceUserUpdate(d *schema.ResourceData, m interface{}) error {
 			},
 		})
 	if err != nil {
-		return fmt.Errorf("error finding Wavefront User %s. %s", d.Id(), err)
+		d.SetId("")
+		return nil
 	}
 
 	if len(results) == 0 {
-		return fmt.Errorf("error finding Wavefront User %s. %s", d.Id(), err)
+		d.SetId("")
+		return nil
 	}
 
 	u := results[0]
@@ -138,7 +140,7 @@ func resourceUserDelete(d *schema.ResourceData, m interface{}) error {
 	users := m.(*wavefrontClient).client.Users()
 	results, err := users.Find(
 		[]*wavefront.SearchCondition{
-			&wavefront.SearchCondition{
+			{
 				Key:            "id",
 				Value:          d.Id(),
 				MatchingMethod: "EXACT",
