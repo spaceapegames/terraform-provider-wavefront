@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/WavefrontHQ/go-wavefront-management-api"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	"strings"
 )
 
 func resourceUser() *schema.Resource {
@@ -13,6 +12,7 @@ func resourceUser() *schema.Resource {
 		Read:   resourceUserRead,
 		Update: resourceUserUpdate,
 		Delete: resourceUserDelete,
+		Exists: resourceUserExists,
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
@@ -71,26 +71,30 @@ func resourceUserCreate(d *schema.ResourceData, m interface{}) error {
 
 func resourceUserRead(d *schema.ResourceData, m interface{}) error {
 	users := m.(*wavefrontClient).client.Users()
-	userId := d.Id()
 
-	user := wavefront.User{
-		ID: &userId,
+	results, err := users.Find(
+		[]*wavefront.SearchCondition{
+			{
+				Key:            "id",
+				Value:          d.Id(),
+				MatchingMethod: "EXACT",
+			},
+		})
+	if err != nil {
+		return fmt.Errorf("error finding Wavefront User %s. %s", d.Id(), err)
 	}
 
-	if err := users.Get(&user); err != nil {
-		if strings.Contains(err.Error(), "404") {
-			d.SetId("")
-			return nil
-		} else {
-			d.SetId("")
-			return fmt.Errorf("unable to find user: %s", userId)
-		}
+	if len(results) == 0 {
+		d.SetId("")
+		return nil
 	}
+
+	user := results[0]
 
 	d.Set("email", user.ID)
 	d.Set("customer", user.Customer)
 	d.Set("groups", user.Permissions)
-	resourceEncodeUserGroups(d, &user)
+	resourceEncodeUserGroups(d, user)
 
 	return nil
 }
@@ -106,8 +110,7 @@ func resourceUserUpdate(d *schema.ResourceData, m interface{}) error {
 			},
 		})
 	if err != nil {
-		d.SetId("")
-		return nil
+		return fmt.Errorf("error finding Wavefront User %s. %s", d.Id(), err)
 	}
 
 	if len(results) == 0 {
@@ -159,6 +162,28 @@ func resourceUserDelete(d *schema.ResourceData, m interface{}) error {
 
 	d.SetId("")
 	return nil
+}
+
+func resourceUserExists(d *schema.ResourceData, m interface{}) (bool, error) {
+	users := m.(*wavefrontClient).client.Users()
+	results, err := users.Find(
+		[]*wavefront.SearchCondition{
+			{
+				Key:            "id",
+				Value:          d.Id(),
+				MatchingMethod: "EXACT",
+			},
+		})
+
+	if err != nil {
+		return false, fmt.Errorf("error finding Wavefront User %s. %s", d.Id(), err)
+	}
+
+	if len(results) == 0 {
+		return false, nil
+	}
+
+	return true, nil
 }
 
 // Decodes the user groups from the state and assigns them to the User
