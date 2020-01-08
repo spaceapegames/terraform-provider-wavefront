@@ -30,6 +30,8 @@ github.com/ChrisTrenkamp/goxpath v0.0.0-20170922090931-c385f95c6022/go.mod h1:nu
 github.com/Unknwon/com v0.0.0-20151008135407-28b053d5a292/go.mod h1:KYCjqMOeHpNuTOiFQU6WEcTG7poCJrUs0YgyHNtn1no=
 github.com/WavefrontHQ/go-wavefront-management-api v1.7.0-RC2 h1:R71E+5dK8Siincn0yu6SX0QqAKbjvVm3irejT9k0XSY=
 github.com/WavefrontHQ/go-wavefront-management-api v1.7.0-RC2/go.mod h1:bYC6lfCkHeB+EmFWIi1imTG14CNtGPnsTFt7lxl0M40=
+github.com/WavefrontHQ/go-wavefront-management-api v1.7.1-RC0 h1:LLERdENBqFU5h1uyTxoGD4I3ThQAm/Bmlu5g+5oKXrc=
+github.com/WavefrontHQ/go-wavefront-management-api v1.7.1-RC0/go.mod h1:bYC6lfCkHeB+EmFWIi1imTG14CNtGPnsTFt7lxl0M40=
 github.com/WavefrontHQ/terraform-provider-wavefront v0.1.0 h1:dIrrIIku6J9dfmVU4AEfkYTla//8WIYaCVL+vFpCdkc=
 github.com/WavefrontHQ/terraform-provider-wavefront v0.1.0/go.mod h1:uBm+s2W8LO3vIusKv7g/5g6aEyW3iVdkzncKBsSZqdc=
 github.com/abdullin/seq v0.0.0-20160510034733-d5467c17e7af/go.mod h1:5Jv4cbFiHJMsVxt52+i0Ha45fjshj6wxYr1r19tB9bw=
