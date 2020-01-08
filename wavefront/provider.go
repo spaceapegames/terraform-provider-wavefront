@@ -14,12 +14,12 @@ type wavefrontClient struct {
 func Provider() *schema.Provider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
-			"address": &schema.Schema{
+			"address": {
 				Type:        schema.TypeString,
 				Required:    true,
 				DefaultFunc: schema.EnvDefaultFunc("WAVEFRONT_ADDRESS", ""),
 			},
-			"token": &schema.Schema{
+			"token": {
 				Type:        schema.TypeString,
 				Required:    true,
 				DefaultFunc: schema.EnvDefaultFunc("WAVEFRONT_TOKEN", ""),
@@ -32,6 +32,7 @@ func Provider() *schema.Provider {
 			"wavefront_derived_metric": resourceDerivedMetric(),
 			"wavefront_alert_target":   resourceTarget(),
 			"wavefront_user":           resourceUser(),
+			"wavefront_user_group":     resourceUserGroup(),
 		},
 		ConfigureFunc: providerConfigure,
 	}
