@@ -122,6 +122,7 @@ func resourceDerivedMetricRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("minutes", tmpDM.Minutes)
 	d.Set("additional_information", tmpDM.AdditionalInformation)
 	d.Set("query", tmpDM.Query)
+	d.Set("tags", tmpDM.Tags.CustomerTags)
 
 	return nil
 }
