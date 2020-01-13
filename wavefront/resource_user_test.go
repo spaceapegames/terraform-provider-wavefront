@@ -128,7 +128,7 @@ func testAccCheckWavefrontUserDestroy(s *terraform.State) error {
 				},
 			})
 		if err != nil {
-			return fmt.Errorf("Error finding Wavefront Target. %s", err)
+			return fmt.Errorf("error finding Wavefront User. %s", err)
 		}
 		if len(results) > 0 {
 			return fmt.Errorf("user still exists")
