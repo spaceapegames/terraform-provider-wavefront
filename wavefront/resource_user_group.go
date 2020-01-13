@@ -30,6 +30,7 @@ func resourceUserGroup() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Required: true,
 			},
+			// TODO - this should be more than computed
 			"members": {
 				Type:     schema.TypeSet,
 				Elem:     &schema.Schema{Type: schema.TypeString},
@@ -119,7 +120,6 @@ func resourceUserGroupDelete(d *schema.ResourceData, m interface{}) error {
 
 func resourceUserGroupExists(d *schema.ResourceData, m interface{}) (bool, error) {
 	userGroups := m.(*wavefrontClient).client.UserGroups()
-
 	results, err := userGroups.Find(
 		[]*wavefront.SearchCondition{
 			{
