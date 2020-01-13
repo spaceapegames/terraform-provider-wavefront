@@ -1,3 +1,15 @@
+## [v2.1.2] - 2020-01-13
+
+*Added Support for User Groups*
+
+*Added more test cases for import logic*
+
+- User Groups
+- Users
+- Derived Metrics
+
+*Fixed issue where Derived Metrics were not reading Tags*
+
 ## [v2.1.1] - 2019-12-19
 
 *Add support for Derived Metrics*
